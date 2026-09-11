@@ -307,8 +307,9 @@ export default function Dashboard() {
 
         // Browser / OS notification
         if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-          // Only show OS notification if tab is hidden OR if tab is visible but we're not in that chat
-          const shouldNotify = document.visibilityState === 'hidden' || selectedChatRef.current?.uid !== senderId;
+          // If tab is hidden, FCM Service Worker handles the push notification to avoid duplicates.
+          // We only manually show it if the tab is VISIBLE but the user is looking at a different chat.
+          const shouldNotify = document.visibilityState === 'visible' && selectedChatRef.current?.uid !== senderId;
           
           if (shouldNotify) {
             // Haptic feedback
