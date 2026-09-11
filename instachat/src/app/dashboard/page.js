@@ -137,21 +137,19 @@ export default function Dashboard() {
             
             if (token) {
               console.log("✅ FCM Token:", token);
-              alert("FCM Token Generated! ✅");
               
               const subscription = { fcmToken: token, type: 'fcm' };
               await subscribeToPush(user.uid, subscription).catch(e => {
                 console.error("Push subscribe error:", e);
-                alert("Server registration failed ❌");
               });
             } else {
-              alert("No token received ❌");
+              console.warn("No token received ❌");
             }
           } else {
-            alert("Messaging not initialized ❌");
+            console.warn("Messaging not initialized ❌");
           }
         } else {
-          alert("Service Workers not supported ❌");
+          console.warn("Service Workers not supported ❌");
         }
 
         // Listen for foreground messages
