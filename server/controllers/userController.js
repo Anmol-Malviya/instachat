@@ -33,11 +33,16 @@ exports.searchUsers = async (req, res) => {
   try {
     const { term } = req.params;
     const { selfUid } = req.query;
+    
+    // Create a safe regex for partial matching
+    const safeTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    
     const users = await User.find({
       uid: { $ne: selfUid },
       $or: [
-        { email: { $regex: `^${term}$`, $options: 'i' } },
-        { username: { $regex: `^${term}$`, $options: 'i' } },
+        { name: { $regex: safeTerm, $options: 'i' } },
+        { email: { $regex: safeTerm, $options: 'i' } },
+        { username: { $regex: safeTerm, $options: 'i' } },
       ]
     }).limit(20).select('-__v');
     res.json(users);
