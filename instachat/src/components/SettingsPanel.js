@@ -6,10 +6,10 @@ import { updateUser } from "@/lib/api";
 import { getAuth, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
 import { app } from "@/lib/firebase";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, Lock, Phone, Calendar, Save, CheckCircle2, AlertCircle, ShieldCheck, Sun, Moon, Monitor, Bell } from "lucide-react";
+import { User, Lock, Phone, Calendar, Save, CheckCircle2, AlertCircle, ShieldCheck, Sun, Moon, Monitor, Bell, LogOut } from "lucide-react";
 
 export default function SettingsPanel() {
-  const { user, profileData, refreshProfile } = useAuth();
+  const { user, profileData, refreshProfile, logout } = useAuth();
   const [activeTab, setActiveTab] = useState("profile");
   const auth = getAuth(app);
 
@@ -215,11 +215,18 @@ export default function SettingsPanel() {
               </FieldRow>
             </div>
 
-            <button type="submit" disabled={loading}
-              className="w-full sm:w-auto sm:ml-auto flex items-center justify-center gap-2 bg-white text-black hover:bg-zinc-200 active:scale-95 text-white px-8 py-3.5 rounded-2xl font-bold text-sm transition-all shadow-lg shadow-white/10 disabled:opacity-50">
-              <Save size={16} />
-              {loading ? "Saving..." : "Save Changes"}
-            </button>
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <button type="button" onClick={logout}
+                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-red-500/10 text-red-500 hover:bg-red-500/20 active:scale-95 px-8 py-3.5 rounded-2xl font-bold text-sm transition-all border border-red-500/20">
+                <LogOut size={16} />
+                Logout
+              </button>
+              <button type="submit" disabled={loading}
+                className="w-full sm:w-auto sm:ml-auto flex items-center justify-center gap-2 bg-white text-black hover:bg-zinc-200 active:scale-95 px-8 py-3.5 rounded-2xl font-bold text-sm transition-all shadow-lg shadow-white/10 disabled:opacity-50">
+                <Save size={16} />
+                {loading ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
           </motion.form>
         )}
 
