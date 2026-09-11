@@ -108,7 +108,7 @@ export default function SettingsPanel() {
   return (
     <div className="flex-1 flex flex-col overflow-y-auto bg-[#0c0c0e]">
       {/* ── Profile Header Banner ── */}
-      <div className="relative bg-gradient-to-b from-purple-900/20 to-transparent px-4 sm:px-8 pt-8 pb-16 flex-shrink-0">
+      <div className="relative bg-gradient-to-b from-white/10 to-transparent px-4 sm:px-8 pt-8 pb-16 flex-shrink-0">
         <h1 className="text-xl sm:text-2xl font-black tracking-tight mb-1">Settings</h1>
         <p className="text-zinc-500 text-xs sm:text-sm">Manage your profile and account security.</p>
       </div>
@@ -118,7 +118,7 @@ export default function SettingsPanel() {
         <div className="bg-[#141416] border border-white/8 rounded-2xl sm:rounded-3xl p-4 sm:p-6 flex flex-col sm:flex-row items-center sm:items-start gap-4 shadow-xl">
           <div className="relative flex-shrink-0">
             <img
-              src={user?.photoURL || `https://ui-avatars.com/api/?name=${user?.displayName}&background=7c3aed&color=fff`}
+              src={user?.photoURL || `https://ui-avatars.com/api/?name=${user?.displayName}&background=ffffff&color=000`}
               alt="Profile"
               className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border-4 border-[#09090b] shadow-lg"
             />
@@ -126,7 +126,7 @@ export default function SettingsPanel() {
           </div>
           <div className="flex-1 text-center sm:text-left min-w-0">
             <h2 className="text-lg sm:text-xl font-bold truncate">{profileData?.name || user?.displayName || "User"}</h2>
-            {profileData?.username && <p className="text-purple-400 text-sm font-medium">@{profileData.username}</p>}
+            {profileData?.username && <p className="text-white text-sm font-medium">@{profileData.username}</p>}
             <p className="text-zinc-500 text-xs mt-1">{user?.email}</p>
             {profileData?.bio && <p className="text-zinc-400 text-xs mt-2 line-clamp-2">{profileData.bio}</p>}
           </div>
@@ -147,7 +147,7 @@ export default function SettingsPanel() {
               onClick={() => { setActiveTab(tab.id); setError(""); setSuccess(""); }}
               className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
                 activeTab === tab.id
-                  ? "bg-purple-600 text-white shadow-lg shadow-purple-500/20"
+                  ? "bg-white text-black shadow-lg shadow-white/10"
                   : "text-zinc-500 hover:text-zinc-300"
               }`}
             >
@@ -216,7 +216,7 @@ export default function SettingsPanel() {
             </div>
 
             <button type="submit" disabled={loading}
-              className="w-full sm:w-auto sm:ml-auto flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-500 active:scale-95 text-white px-8 py-3.5 rounded-2xl font-bold text-sm transition-all shadow-lg shadow-purple-500/20 disabled:opacity-50">
+              className="w-full sm:w-auto sm:ml-auto flex items-center justify-center gap-2 bg-white text-black hover:bg-zinc-200 active:scale-95 text-white px-8 py-3.5 rounded-2xl font-bold text-sm transition-all shadow-lg shadow-white/10 disabled:opacity-50">
               <Save size={16} />
               {loading ? "Saving..." : "Save Changes"}
             </button>
@@ -241,12 +241,12 @@ export default function SettingsPanel() {
                   placeholder="••••••••" className="w-full bg-transparent py-3 text-sm text-white placeholder:text-zinc-600 outline-none" required />
               </FieldRow>
               <div className="border-t border-white/5" />
-              <FieldRow label="New Password" icon={<Lock size={15} className="text-purple-400" />}>
+              <FieldRow label="New Password" icon={<Lock size={15} className="text-white" />}>
                 <input type="password" value={passwords.new} onChange={e => setPasswords({ ...passwords, new: e.target.value })}
                   placeholder="Min. 6 characters" className="w-full bg-transparent py-3 text-sm text-white placeholder:text-zinc-600 outline-none" required minLength="6" />
               </FieldRow>
               <div className="border-t border-white/5" />
-              <FieldRow label="Confirm Password" icon={<Lock size={15} className="text-purple-400" />}>
+              <FieldRow label="Confirm Password" icon={<Lock size={15} className="text-white" />}>
                 <input type="password" value={passwords.confirm} onChange={e => setPasswords({ ...passwords, confirm: e.target.value })}
                   placeholder="Repeat new password" className="w-full bg-transparent py-3 text-sm text-white placeholder:text-zinc-600 outline-none" required minLength="6" />
               </FieldRow>
@@ -270,7 +270,7 @@ export default function SettingsPanel() {
             )}
 
             <button type="submit" disabled={loading}
-              className="w-full sm:w-auto sm:ml-auto flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-500 active:scale-95 text-white px-8 py-3.5 rounded-2xl font-bold text-sm transition-all shadow-lg shadow-purple-500/20 disabled:opacity-50">
+              className="w-full sm:w-auto sm:ml-auto flex items-center justify-center gap-2 bg-white text-black hover:bg-zinc-200 active:scale-95 text-white px-8 py-3.5 rounded-2xl font-bold text-sm transition-all shadow-lg shadow-white/10 disabled:opacity-50">
               <Lock size={16} />
               {loading ? "Updating..." : "Update Password"}
             </button>
@@ -290,7 +290,7 @@ export default function SettingsPanel() {
                 ].map(opt => (
                   <button key={opt.id} onClick={() => handleThemeChange(opt.id)}
                     className={`flex flex-col items-center gap-2.5 p-3 rounded-2xl border-2 transition-all active:scale-95 ${
-                      colorMode === opt.id ? "border-purple-500 bg-purple-500/10" : "border-white/8 bg-white/[0.02] hover:border-purple-500/30"
+                      colorMode === opt.id ? "border-white bg-white/5" : "border-white/8 bg-white/[0.02] hover:border-white/30"
                     }`}>
                     <div className="w-full rounded-xl overflow-hidden border border-white/10 flex" style={{ height: 52 }}>
                       <div className="w-4 h-full flex flex-col items-center gap-1 pt-1.5" style={{ background: opt.nav }}>
@@ -304,17 +304,17 @@ export default function SettingsPanel() {
                         <div className="self-start h-1.5 rounded-full" style={{ width: "45%", background: opt.bubble, border: "0.5px solid rgba(255,255,255,0.1)" }} />
                       </div>
                     </div>
-                    <div className={`flex items-center gap-1 text-xs font-semibold ${colorMode === opt.id ? "text-purple-400" : "text-zinc-400"}`}>
+                    <div className={`flex items-center gap-1 text-xs font-semibold ${colorMode === opt.id ? "text-white" : "text-zinc-400"}`}>
                       {opt.icon}{opt.label}
                     </div>
-                    {colorMode === opt.id && <span className="h-1.5 w-1.5 rounded-full bg-purple-500" />}
+                    {colorMode === opt.id && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
                   </button>
                 ))}
               </div>
             </div>
             <div className={`flex items-center gap-3 p-4 rounded-2xl border ${
               colorMode === "light" ? "bg-amber-500/10 border-amber-500/20"
-              : colorMode === "dark" ? "bg-purple-500/10 border-purple-500/20"
+              : colorMode === "dark" ? "bg-white/5 border-white/20"
               : "bg-blue-500/10 border-blue-500/20"
             }`}>
               <span className="text-2xl">{colorMode === "dark" ? "🌙" : colorMode === "light" ? "☀️" : "💻"}</span>
@@ -372,7 +372,7 @@ export default function SettingsPanel() {
                       });
                     }
                   }}
-                  className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-500 text-white py-2.5 rounded-xl font-bold text-xs transition-all"
+                  className="w-full flex items-center justify-center gap-2 bg-white text-black hover:bg-zinc-200 text-white py-2.5 rounded-xl font-bold text-xs transition-all"
                 >
                   Request Permission
                 </button>

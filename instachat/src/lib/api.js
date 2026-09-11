@@ -40,5 +40,13 @@ export const getUnreadCount   = (roomId, uid)        => api(`/api/messages/unrea
 // ── Rooms ──────────────────────────────────────────────
 export const getRoom    = (roomId)       => api(`/api/rooms/${roomId}`);
 export const updateRoom = (roomId, data) => api(`/api/rooms/${roomId}`, { method: 'PATCH', body: JSON.stringify(data) });
+export const createGroup = (data)        => api('/api/rooms/groups', { method: 'POST', body: JSON.stringify(data) });
+export const getUserGroups = (userId)    => api(`/api/rooms/groups/${userId}`);
 // ── Push ──────────────────────────────────────────────
 export const subscribeToPush = (uid, subscription) => api('/api/push/subscribe', { method: 'POST', body: JSON.stringify({ uid, subscription }) });
+// ── Reports ───────────────────────────────────────────
+export const createReport = (data)       => api('/api/reports', { method: 'POST', body: JSON.stringify(data) });
+export const searchMessages = (q, roomId) => {
+  const url = roomId ? `/api/messages/search?q=${encodeURIComponent(q)}&roomId=${roomId}` : `/api/messages/search?q=${encodeURIComponent(q)}`;
+  return api(url);
+};

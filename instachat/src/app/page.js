@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, Video, Shield, UserPlus, Mail, Lock, User, ArrowRight, Loader2, AlertCircle } from "lucide-react";
+import { MessageCircle, Video, Shield, User, Mail, Lock, ArrowRight, Loader2, AlertCircle, Zap, Globe } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -37,7 +37,6 @@ export default function Home() {
         await loginWithEmail(formData.email, formData.password);
       }
     } catch (err) {
-      // Firebase SDK v9+ uses err.code (not err.message) for auth errors
       const code = err?.code || "";
       if (code === "auth/invalid-credential" || code === "auth/wrong-password" || code === "auth/user-not-found") {
         setError("Incorrect email or password.");
@@ -62,201 +61,195 @@ export default function Home() {
   };
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-[#09090b] text-white flex flex-col items-center justify-center p-4 sm:p-6">
-      {/* Background Decorative Blobs */}
-      <div className="absolute top-[-10%] left-[-10%] h-[300px] w-[300px] sm:h-[500px] sm:w-[500px] rounded-full bg-purple-600/10 blur-[120px]" />
-      <div className="absolute bottom-[-10%] right-[-10%] h-[300px] w-[300px] sm:h-[500px] sm:w-[500px] rounded-full bg-blue-600/10 blur-[120px]" />
-
-      {/* Mobile-only compact branding */}
-      <div className="lg:hidden flex items-center gap-3 mb-8 z-10">
-        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-purple-600 to-blue-500 shadow-xl shadow-purple-500/20">
-          <MessageCircle size={22} className="text-white" />
+    <div className="relative min-h-screen w-full bg-black text-white selection:bg-white selection:text-black font-sans">
+      
+      {/* Navbar Minimalist */}
+      <nav className="absolute top-0 left-0 w-full p-6 lg:px-12 flex items-center justify-between border-b border-white/5 bg-black/50 backdrop-blur-xl z-50">
+        <div className="flex items-center gap-3">
+          <div className="flex h-8 w-8 items-center justify-center bg-white text-black rounded-lg">
+            <MessageCircle size={18} className="fill-black" />
+          </div>
+          <span className="text-xl font-black tracking-tighter">InstaChat</span>
         </div>
-        <h1 className="text-3xl font-black tracking-tighter">
-          Insta<span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">Chat</span>
-        </h1>
-      </div>
+      </nav>
 
-      <main className="relative z-10 w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+      {/* Main Content Area */}
+      <main className="pt-32 pb-16 px-4 sm:px-6 lg:px-12 mx-auto max-w-[1400px] min-h-screen flex flex-col xl:flex-row items-center justify-center gap-16 xl:gap-24">
         
-        {/* Left Side: Branding & Features */}
-        <div className="hidden lg:flex flex-col space-y-12">
-            <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="flex items-center gap-4"
-            >
-                <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-tr from-purple-600 to-blue-500 shadow-2xl shadow-purple-500/20">
-                    <MessageCircle size={36} className="text-white" />
-                </div>
-                <h1 className="text-6xl font-black tracking-tighter">
-                    Insta<span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">Chat</span>
-                </h1>
-            </motion.div>
+        {/* Left Side: Copy & Bento Grid */}
+        <div className="w-full xl:w-[55%] flex flex-col z-10 mt-10 xl:mt-0">
+          
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="space-y-6 max-w-2xl"
+          >
+            <h1 className="text-5xl sm:text-6xl lg:text-[5.5rem] leading-[1.05] font-black tracking-tighter text-white">
+              Connect. Call. Share.
+            </h1>
+            <p className="text-lg sm:text-xl text-zinc-400 font-medium tracking-tight max-w-xl">
+              Experience real-time communication stripped to its purest form. No noise, just instant connection.
+            </p>
+          </motion.div>
 
-            <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="space-y-6"
-            >
-                <h2 className="text-4xl font-bold leading-tight text-white">Connect, Call, and Share <br/> like never before.</h2>
-                <div className="grid grid-cols-2 gap-6 pt-4">
-                    <FeatureBox icon={<Video className="text-purple-400" />} title="HD Video" desc="Crystal clear calls." />
-                    <FeatureBox icon={<Shield className="text-blue-400" />} title="Secure" desc="Encrypted chats." />
-                </div>
-            </motion.div>
+          {/* Bento Grid Features */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+            className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-16"
+          >
+            <div className="bg-zinc-950 border border-white/10 p-8 flex flex-col justify-between aspect-square sm:aspect-auto sm:h-64 rounded-2xl">
+              <div className="h-12 w-12 rounded-xl bg-white text-black flex items-center justify-center mb-6">
+                <Zap size={24} className="fill-black" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold tracking-tight mb-2">Lightning Fast</h3>
+                <p className="text-zinc-500 text-sm leading-relaxed">Messages delivered instantly via WebSocket architecture.</p>
+              </div>
+            </div>
+
+            <div className="bg-zinc-950 border border-white/10 p-8 flex flex-col justify-between aspect-square sm:aspect-auto sm:h-64 rounded-2xl">
+              <div className="h-12 w-12 rounded-xl bg-white/10 text-white flex items-center justify-center mb-6 border border-white/10">
+                <Shield size={24} />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold tracking-tight mb-2">Secure & Private</h3>
+                <p className="text-zinc-500 text-sm leading-relaxed">End-to-end focus with zero compromises on privacy.</p>
+              </div>
+            </div>
+          </motion.div>
         </div>
 
         {/* Right Side: Auth Form */}
         <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="w-full max-w-md mx-auto"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4, ease: "easeOut" }}
+          className="w-full xl:w-[45%] max-w-md mx-auto xl:mx-0"
         >
-            <div className="bg-white/[0.03] backdrop-blur-2xl border border-white/10 rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8 md:p-10 shadow-2xl">
-                
-                {/* Mode Switcher */}
-                <div className="flex bg-black/40 p-1.5 rounded-2xl mb-8 relative">
-                    <motion.div 
-                        className="absolute h-[calc(100%-12px)] w-[calc(50%-6px)] bg-white/10 rounded-xl"
-                        animate={{ x: authMode === "login" ? 0 : "100%" }}
-                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    />
-                    <button 
-                        onClick={() => setAuthMode("login")}
-                        className={`flex-1 py-2 text-sm font-bold transition-all z-10 ${authMode === 'login' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
-                    >
-                        Login
-                    </button>
-                    <button 
-                        onClick={() => setAuthMode("signup")}
-                        className={`flex-1 py-2 text-sm font-bold transition-all z-10 ${authMode === 'signup' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
-                    >
-                        Signup
-                    </button>
-                </div>
-
-                <div className="mb-8">
-                    <h3 className="text-2xl font-black mb-1">{authMode === 'login' ? 'Welcome Back' : 'Get Started'}</h3>
-                    <p className="text-zinc-500 text-sm">{authMode === 'login' ? 'Login to continue your conversations.' : 'Create an account to start chatting.'}</p>
-                </div>
-
-                <form onSubmit={handleAuth} className="space-y-4">
-                    <AnimatePresence mode="wait">
-                        {authMode === "signup" && (
-                            <motion.div 
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: "auto" }}
-                                exit={{ opacity: 0, height: 0 }}
-                                className="space-y-1.5"
-                            >
-                                <div className="relative">
-                                    <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" />
-                                    <input 
-                                        type="text" 
-                                        placeholder="Full Name" 
-                                        className="w-full rounded-2xl bg-white/[0.03] border border-white/5 py-4 pl-12 pr-4 text-sm outline-none transition-all focus:ring-2 focus:ring-purple-500/50"
-                                        value={formData.name}
-                                        onChange={(e) => setFormData({...formData, name: e.target.value})}
-                                        required={authMode === "signup"}
-                                    />
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-
-                    <div className="space-y-1.5">
-                        <div className="relative">
-                            <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" />
-                            <input 
-                                type="email" 
-                                placeholder="Email Address" 
-                                className="w-full rounded-2xl bg-white/[0.03] border border-white/5 py-4 pl-12 pr-4 text-sm outline-none transition-all focus:ring-2 focus:ring-purple-500/50"
-                                value={formData.email}
-                                onChange={(e) => setFormData({...formData, email: e.target.value})}
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                        <div className="relative">
-                            <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" />
-                            <input 
-                                type="password" 
-                                placeholder="Password" 
-                                className="w-full rounded-2xl bg-white/[0.03] border border-white/5 py-4 pl-12 pr-4 text-sm outline-none transition-all focus:ring-2 focus:ring-purple-500/50"
-                                value={formData.password}
-                                onChange={(e) => setFormData({...formData, password: e.target.value})}
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    {error && (
-                        <div className="flex items-center gap-2 text-red-400 text-xs bg-red-400/10 p-4 rounded-xl border border-red-400/20">
-                            <AlertCircle size={14} /> {error}
-                        </div>
-                    )}
-
-                    <button 
-                        type="submit"
-                        disabled={loading}
-                        className="w-full h-14 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl font-black text-sm transition-all shadow-xl shadow-purple-500/20 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
-                    >
-                        {loading ? <Loader2 className="animate-spin" /> : (
-                            <> {authMode === 'login' ? 'Login' : 'Create Account'} <ArrowRight size={18} /> </>
-                        )}
-                    </button>
-                </form>
-
-                <div className="relative my-8">
-                    <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-white/5"></span></div>
-                    <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-widest text-zinc-500"><span className="bg-[#121214] px-4 backdrop-blur-xl">Or Continue With</span></div>
-                </div>
-
-                <button 
-                    onClick={loginWithGoogle}
-                    className="w-full h-14 bg-white text-black hover:bg-zinc-200 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-3 active:scale-95"
-                >
-                    <Image src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width={20} height={20} />
-                    Google Account
-                </button>
+          <div className="bg-zinc-950 border border-white/10 rounded-3xl p-8 sm:p-10">
+            
+            {/* Minimalist Switcher */}
+            <div className="flex bg-black border border-white/10 p-1.5 rounded-xl mb-8 relative">
+              <motion.div 
+                className="absolute h-[calc(100%-12px)] w-[calc(50%-6px)] bg-white rounded-lg"
+                animate={{ x: authMode === "login" ? 0 : "100%" }}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              />
+              <button 
+                onClick={() => setAuthMode("login")}
+                className={`flex-1 py-2 text-sm font-bold transition-colors z-10 ${authMode === 'login' ? 'text-black' : 'text-zinc-500 hover:text-white'}`}
+              >
+                Sign In
+              </button>
+              <button 
+                onClick={() => setAuthMode("signup")}
+                className={`flex-1 py-2 text-sm font-bold transition-colors z-10 ${authMode === 'signup' ? 'text-black' : 'text-zinc-500 hover:text-white'}`}
+              >
+                Create Account
+              </button>
             </div>
+
+            <div className="mb-8">
+              <h3 className="text-2xl font-black tracking-tight mb-2">{authMode === 'login' ? 'Welcome back' : 'Join InstaChat'}</h3>
+              <p className="text-zinc-500 text-sm">{authMode === 'login' ? 'Enter your details to sign in.' : 'Register below to start chatting.'}</p>
+            </div>
+
+            <form onSubmit={handleAuth} className="space-y-4">
+              <AnimatePresence mode="wait">
+                {authMode === "signup" && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="space-y-2 overflow-hidden"
+                  >
+                    <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Full Name</label>
+                    <div className="relative">
+                      <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" />
+                      <input 
+                        type="text" 
+                        placeholder="John Doe" 
+                        className="w-full rounded-xl bg-black border border-white/10 py-3.5 pl-11 pr-4 text-sm outline-none transition-all focus:border-white focus:ring-1 focus:ring-white"
+                        value={formData.name}
+                        onChange={(e) => setFormData({...formData, name: e.target.value})}
+                        required={authMode === "signup"}
+                      />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Email</label>
+                <div className="relative">
+                  <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" />
+                  <input 
+                    type="email" 
+                    placeholder="name@example.com" 
+                    className="w-full rounded-xl bg-black border border-white/10 py-3.5 pl-11 pr-4 text-sm outline-none transition-all focus:border-white focus:ring-1 focus:ring-white"
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Password</label>
+                <div className="relative">
+                  <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" />
+                  <input 
+                    type="password" 
+                    placeholder="••••••••" 
+                    className="w-full rounded-xl bg-black border border-white/10 py-3.5 pl-11 pr-4 text-sm outline-none transition-all focus:border-white focus:ring-1 focus:ring-white"
+                    value={formData.password}
+                    onChange={(e) => setFormData({...formData, password: e.target.value})}
+                    required
+                  />
+                </div>
+              </div>
+
+              {error && (
+                <div className="flex items-center gap-2 text-white text-xs bg-red-500/20 p-4 rounded-xl border border-red-500/30">
+                  <AlertCircle size={14} className="text-red-400" /> {error}
+                </div>
+              )}
+
+              <button 
+                type="submit"
+                disabled={loading}
+                className="w-full h-12 mt-4 bg-white hover:bg-zinc-200 text-black rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? <Loader2 className="animate-spin" size={18} /> : (
+                  <> {authMode === 'login' ? 'Sign In' : 'Create Account'} <ArrowRight size={16} /> </>
+                )}
+              </button>
+            </form>
+
+            <div className="relative my-8">
+              <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-white/10"></span></div>
+              <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-widest text-zinc-500"><span className="bg-zinc-950 px-4">Or</span></div>
+            </div>
+
+            <button 
+              onClick={loginWithGoogle}
+              className="w-full h-12 bg-black border border-white/10 text-white hover:bg-white/5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-3"
+            >
+              <Image src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width={18} height={18} />
+              Continue with Google
+            </button>
+          </div>
         </motion.div>
       </main>
-
-      <footer className="mt-10 lg:mt-20 text-zinc-600 text-xs uppercase tracking-widest font-medium text-center">
-          © 2026 InstaChat. Built for the next generation.
+      
+      <footer className="w-full border-t border-white/5 py-8 mt-auto">
+        <div className="text-zinc-600 text-[10px] uppercase tracking-widest font-bold text-center">
+          © 2026 InstaChat Inc. All rights reserved.
+        </div>
       </footer>
     </div>
-  );
-}
-
-function FeatureBox({ icon, title, desc }) {
-    return (
-        <div className="bg-white/[0.02] border border-white/5 p-5 rounded-3xl space-y-2">
-            <div className="bg-white/5 w-10 h-10 rounded-xl flex items-center justify-center">{icon}</div>
-            <h4 className="font-bold text-sm">{title}</h4>
-            <p className="text-[10px] text-zinc-500">{desc}</p>
-        </div>
-    );
-}
-
-function FeatureCard({ icon, title, desc }) {
-  return (
-    <motion.div 
-      whileHover={{ y: -5 }}
-      className="flex flex-col items-center space-y-4 rounded-3xl border border-white/5 bg-white/[0.03] p-8 text-center backdrop-blur-md"
-    >
-      <div className="rounded-2xl bg-white/5 p-4">
-        {icon}
-      </div>
-      <h3 className="text-xl font-bold">{title}</h3>
-      <p className="text-sm leading-relaxed text-zinc-500">
-        {desc}
-      </p>
-    </motion.div>
   );
 }

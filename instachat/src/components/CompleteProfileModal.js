@@ -65,7 +65,7 @@ export default function CompleteProfileModal() {
         className="w-full max-w-lg rounded-[2.5rem] border border-white/10 bg-[#0c0c0e] p-8 md:p-12 shadow-2xl my-8"
       >
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-[2rem] bg-gradient-to-tr from-purple-600 to-blue-500 shadow-2xl shadow-purple-500/30">
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-[2rem] bg-white text-black shadow-2xl shadow-white/10">
             <User size={36} className="text-white" />
           </div>
           <h2 className="text-3xl font-black tracking-tight text-white mb-2">Build Your Identity</h2>
@@ -77,13 +77,13 @@ export default function CompleteProfileModal() {
           <div className="space-y-1.5">
             <label className="text-[10px] uppercase font-bold text-zinc-500 ml-2 tracking-widest">Unique Handle</label>
             <div className="relative group">
-              <span className={`absolute left-4 top-1/2 -translate-y-1/2 text-lg font-black transition-colors ${formData.username ? "text-purple-500" : "text-zinc-700"}`}>@</span>
+              <span className={`absolute left-4 top-1/2 -translate-y-1/2 text-lg font-black transition-colors ${formData.username ? "text-white" : "text-zinc-700"}`}>@</span>
               <input
                 type="text"
                 placeholder="username"
                 value={formData.username}
                 onChange={(e) => setFormData({ ...formData, username: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "") })}
-                className="w-full rounded-2xl bg-white/[0.03] border border-white/5 py-4 pl-12 pr-4 text-base font-medium outline-none transition-all focus:ring-2 focus:ring-purple-500/50 focus:bg-white/[0.05]"
+                className="w-full rounded-2xl bg-white/[0.03] border border-white/5 py-4 pl-12 pr-4 text-base font-medium outline-none transition-all focus:ring-2 focus:ring-white/50 focus:bg-white/[0.05]"
                 required
               />
             </div>
@@ -99,7 +99,7 @@ export default function CompleteProfileModal() {
                 placeholder="Your Name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full rounded-2xl bg-white/[0.03] border border-white/5 py-4 pl-12 pr-4 text-base font-medium outline-none transition-all focus:ring-2 focus:ring-purple-500/50 focus:bg-white/[0.05]"
+                className="w-full rounded-2xl bg-white/[0.03] border border-white/5 py-4 pl-12 pr-4 text-base font-medium outline-none transition-all focus:ring-2 focus:ring-white/50 focus:bg-white/[0.05]"
                 required
               />
             </div>
@@ -114,7 +114,7 @@ export default function CompleteProfileModal() {
                 placeholder="Tell us something cool..."
                 value={formData.bio}
                 onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                className="w-full h-28 rounded-2xl bg-white/[0.03] border border-white/5 py-4 pl-12 pr-4 text-sm font-medium outline-none transition-all focus:ring-2 focus:ring-purple-500/50 focus:bg-white/[0.05] resize-none"
+                className="w-full h-28 rounded-2xl bg-white/[0.03] border border-white/5 py-4 pl-12 pr-4 text-sm font-medium outline-none transition-all focus:ring-2 focus:ring-white/50 focus:bg-white/[0.05] resize-none"
               />
             </div>
           </div>
@@ -129,7 +129,7 @@ export default function CompleteProfileModal() {
                 placeholder="+1 234 567 890"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="w-full rounded-2xl bg-white/[0.03] border border-white/5 py-4 pl-12 pr-4 text-base font-medium outline-none transition-all focus:ring-2 focus:ring-purple-500/50 focus:bg-white/[0.05]"
+                className="w-full rounded-2xl bg-white/[0.03] border border-white/5 py-4 pl-12 pr-4 text-base font-medium outline-none transition-all focus:ring-2 focus:ring-white/50 focus:bg-white/[0.05]"
               />
             </div>
           </div>
@@ -148,7 +148,7 @@ export default function CompleteProfileModal() {
           <button
             type="submit"
             disabled={loading || !formData.username || !formData.name}
-            className="group relative h-16 w-full overflow-hidden rounded-2xl bg-purple-600 font-black text-white shadow-xl shadow-purple-500/20 transition-all hover:bg-purple-500 hover:shadow-purple-500/30 active:scale-95 disabled:opacity-50"
+            className="group relative h-16 w-full overflow-hidden rounded-2xl bg-white text-black font-black text-white shadow-xl shadow-white/10 transition-all hover:bg-zinc-200 hover:shadow-white/10 active:scale-95 disabled:opacity-50"
           >
             {loading ? (
               <Loader2 className="mx-auto animate-spin" />

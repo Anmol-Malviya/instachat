@@ -88,9 +88,9 @@ export default function SearchModal({ isOpen, onClose }) {
             placeholder="Search by email or @username..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full rounded-2xl bg-white/5 py-4 pl-12 pr-4 outline-none ring-1 ring-white/10 transition-all focus:ring-purple-500"
+            className="w-full rounded-2xl bg-white/5 py-4 pl-12 pr-4 outline-none ring-1 ring-white/10 transition-all focus:ring-white"
           />
-          {loading && <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-purple-500" size={18} />}
+          {loading && <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-white" size={18} />}
         </form>
 
         <div className="space-y-4 max-h-[40vh] sm:max-h-[300px] overflow-y-auto custom-scrollbar">
@@ -100,7 +100,7 @@ export default function SearchModal({ isOpen, onClose }) {
                 <Users size={16} /> Suggested People
               </h3>
               {loadingRecs ? (
-                <div className="flex justify-center py-8"><Loader2 className="animate-spin text-purple-500" /></div>
+                <div className="flex justify-center py-8"><Loader2 className="animate-spin text-white" /></div>
               ) : recommendations.length > 0 ? (
                 recommendations.map((res, index) => (
                   <div key={res.uid || res._id || index} className="flex items-center justify-between rounded-2xl bg-white/5 p-4 border border-transparent hover:border-white/5 transition-all">
@@ -110,11 +110,11 @@ export default function SearchModal({ isOpen, onClose }) {
                         <div className="flex items-center gap-2">
                           <p className="font-semibold text-sm">{res.name}</p>
                           {res.username && (
-                            <span className="text-[10px] bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full font-bold">@{res.username}</span>
+                            <span className="text-[10px] bg-white/10 text-white px-2 py-0.5 rounded-full font-bold">@{res.username}</span>
                           )}
                         </div>
                         {res.mutualCount > 0 ? (
-                          <p className="text-xs text-purple-400 font-medium mt-0.5">{res.mutualCount} mutual connection{res.mutualCount > 1 ? 's' : ''}</p>
+                          <p className="text-xs text-white font-medium mt-0.5">{res.mutualCount} mutual connection{res.mutualCount > 1 ? 's' : ''}</p>
                         ) : (
                           <p className="text-xs text-zinc-500 mt-0.5">{res.email}</p>
                         )}
@@ -127,7 +127,7 @@ export default function SearchModal({ isOpen, onClose }) {
                     ) : (
                       <button
                         onClick={() => sendRequest(res)}
-                        className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-600 text-white hover:bg-purple-700 transition-all shadow-lg shadow-purple-500/20"
+                        className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black hover:bg-zinc-200 transition-all shadow-lg shadow-white/10"
                       >
                         <UserPlus size={20} />
                       </button>
@@ -147,7 +147,7 @@ export default function SearchModal({ isOpen, onClose }) {
                     <div className="flex items-center gap-2">
                       <p className="font-semibold text-sm">{res.name}</p>
                       {res.username && (
-                        <span className="text-[10px] bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full font-bold">@{res.username}</span>
+                        <span className="text-[10px] bg-white/10 text-white px-2 py-0.5 rounded-full font-bold">@{res.username}</span>
                       )}
                     </div>
                     <p className="text-xs text-zinc-500">{res.email}</p>
@@ -160,7 +160,7 @@ export default function SearchModal({ isOpen, onClose }) {
                 ) : (
                   <button
                     onClick={() => sendRequest(res)}
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-600 text-white hover:bg-purple-700 transition-all shadow-lg shadow-purple-500/20"
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black hover:bg-zinc-200 transition-all shadow-lg shadow-white/10"
                   >
                     <UserPlus size={20} />
                   </button>

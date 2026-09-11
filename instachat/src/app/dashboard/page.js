@@ -8,13 +8,14 @@ import { MessageSquare, Phone, Users, Settings, Search, LogOut, Plus, Bell, Mic,
 import SearchModal from "@/components/SearchModal";
 import ChatWindow from "@/components/ChatWindow";
 import CompleteProfileModal from "@/components/CompleteProfileModal";
+import CreateGroupModal from "@/components/CreateGroupModal";
 import SettingsPanel from "@/components/SettingsPanel";
-import { getRequests, acceptRequest as apiAcceptRequest, batchUsers, getUnreadCount, sendMessage as apiSendMsg, getUser, subscribeToPush } from "@/lib/api";
+import { getRequests, acceptRequest as apiAcceptRequest, batchUsers, getUnreadCount, sendMessage as apiSendMsg, getUser, subscribeToPush, getUserGroups } from "@/lib/api";
 import { messaging, getToken, onMessage } from "@/lib/firebase";
 import { io } from "socket.io-client";
 
 const SOCKET_SERVER = process.env.NEXT_PUBLIC_SOCKET_SERVER_URL || "http://localhost:5000";
-const VAPID_PUBLIC_KEY = "BP3OnY6Jhot7hFpvRfkUuCmkLmc_7TQD6Mi3gT-k8HZN_WqbH2R221tlP3qsCRQLqLimrFVrbHdvR1nlU67cAMg";
+const VAPID_PUBLIC_KEY = "BIWtA1MgjhDdv3oKcKlRhoyyD_YSCEX1n3WfVsQPPGu20IE64UhU4QCqgnHmLN2vjTo3BaQ4ILjNzNjMuFak7tU";
 
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -57,6 +58,7 @@ export default function Dashboard() {
   // UI state
   const [activeTab, setActiveTab] = useState("chats");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
   const [incomingRequests, setIncomingRequests] = useState([]);
   const [connections, setConnections] = useState([]);
   const [selectedChat, setSelectedChat] = useState(null);
@@ -316,7 +318,7 @@ export default function Dashboard() {
 
             const n = new Notification(sender.name, {
               body: displayMsg,
-              icon: sender.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(sender.name)}&background=7c3aed&color=fff`,
+              icon: sender.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(sender.name)}&background=ffffff&color=000`,
               tag: senderId, // collapses duplicate notifications
             });
             n.onclick = () => { window.focus(); n.close(); };
@@ -343,11 +345,25 @@ export default function Dashboard() {
       
       if (connUids.length > 0) {
         const cons = await batchUsers(connUids);
-        setConnections(cons);
+        const groups = await getUserGroups(user.uid);
+        
+        // Format groups to look like connections for the UI
+        const formattedGroups = groups.map(g => ({
+          uid: g.roomId, // Treat roomId as uid for routing/selection
+          name: g.name,
+          photoURL: g.avatarUrl,
+          status: 'online', // Groups are always online
+          isGroup: true,
+          members: g.members
+        }));
+
+        const allChats = [...formattedGroups, ...cons];
+        setConnections(allChats);
+        
         // 3. Unread counts per connection
         const counts = {};
-        await Promise.all(cons.map(async (con) => {
-          const roomId = [user.uid, con.uid].sort().join("_");
+        await Promise.all(allChats.map(async (con) => {
+          const roomId = con.isGroup ? con.uid : [user.uid, con.uid].sort().join("_");
           const { count } = await getUnreadCount(roomId, user.uid);
           counts[con.uid] = count;
         }));
@@ -655,13 +671,14 @@ export default function Dashboard() {
   if (loading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#09090b]">
-        <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-purple-500" />
+        <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-white" />
       </div>
     );
   }
 
   return (
-    <div className="flex h-[100dvh] bg-[#09090b] text-white overflow-hidden selection:bg-purple-500/30">
+    <div className="flex h-[100dvh] bg-black text-white overflow-hidden selection:bg-white/30 md:p-4 lg:p-6 xl:p-8 relative">
+      <div className="flex flex-1 w-full max-w-[1600px] mx-auto bg-[#09090b] md:rounded-[2.5rem] md:border md:border-white/10 overflow-hidden md:shadow-2xl relative z-10">
       {!profileData?.username && <CompleteProfileModal />}
 
       {/* Audio assets */}
@@ -672,7 +689,7 @@ export default function Dashboard() {
       {/* Nav Sidebar — hidden on mobile, visible md+ */}
       <nav className="hidden md:flex flex-shrink-0 w-14 md:w-20 flex-col items-center justify-between border-r border-white/5 bg-black py-6">
         <div className="flex flex-col gap-6 items-center">
-          <div className="h-8 w-8 md:h-10 md:w-10 flex items-center justify-center rounded-xl bg-gradient-to-tr from-purple-600 to-blue-500">
+          <div className="h-8 w-8 md:h-10 md:w-10 flex items-center justify-center rounded-xl bg-white text-black">
             <MessageSquare size={18} />
           </div>
           <div className="flex flex-col gap-5 items-center mt-2">
@@ -686,7 +703,7 @@ export default function Dashboard() {
           <NavIcon icon={<Settings size={20} />} active={activeTab === "settings"} onClick={() => setActiveTab("settings")} />
           <button onClick={logout} className="text-zinc-500 hover:text-red-500 transition-colors"><LogOut size={20} /></button>
           <div className="relative">
-            <img src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.email || 'U')}&background=7c3aed&color=fff`} alt="" className="h-8 w-8 md:h-9 md:w-9 rounded-full border border-white/10" />
+            <img src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.email || 'U')}&background=ffffff&color=000`} alt="" className="h-8 w-8 md:h-9 md:w-9 rounded-full border border-white/10" />
             <span title={socketConnected ? "Connected" : "Connecting..."} className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-black ${socketConnected ? "bg-green-400" : "bg-orange-400 animate-pulse"}`} />
           </div>
         </div>
@@ -714,7 +731,10 @@ export default function Dashboard() {
               >
                 <Bell size={16} />
               </button>
-              <button onClick={() => setIsSearchOpen(true)} className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-600 hover:bg-purple-700">
+              <button onClick={() => setIsSearchOpen(true)} className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 text-zinc-400">
+                <Search size={16} />
+              </button>
+              <button onClick={() => setIsGroupModalOpen(true)} className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-black hover:bg-zinc-200">
                 <Plus size={18} />
               </button>
             </div>
@@ -722,7 +742,7 @@ export default function Dashboard() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={15} />
             <input type="text" placeholder="Search..." value={sidebarSearch} onChange={e => setSidebarSearch(e.target.value)}
-              className="w-full rounded-xl bg-white/5 py-2.5 pl-9 pr-4 text-sm outline-none focus:ring-1 focus:ring-purple-500" />
+              className="w-full rounded-xl bg-white/5 py-2.5 pl-9 pr-4 text-sm outline-none focus:ring-1 focus:ring-white" />
           </div>
         </header>
 
@@ -736,7 +756,7 @@ export default function Dashboard() {
                     <img src={req.senderPhoto} className="h-8 w-8 rounded-full" alt="" />
                     <p className="text-xs font-medium">{req.senderName?.split(' ')[0]}</p>
                   </div>
-                  <button onClick={() => acceptRequest(req)} className="bg-purple-600 text-[10px] px-3 py-1 rounded-md font-bold hover:bg-purple-700">Accept</button>
+                  <button onClick={() => acceptRequest(req)} className="bg-white text-black text-[10px] px-3 py-1 rounded-md font-bold hover:bg-zinc-200">Accept</button>
                 </div>
               ))}
             </div>
@@ -768,7 +788,7 @@ export default function Dashboard() {
                   <p className={`text-[10px] ${con.status === "online" ? "text-green-500" : "text-zinc-500"}`}>{con.status === "online" ? "Online" : "Offline"}</p>
                 </div>
               </div>
-              <button onClick={() => setSelectedChat(con)} className="text-purple-400 hover:text-purple-300">
+              <button onClick={() => setSelectedChat(con)} className="text-white hover:text-zinc-300">
                 <MessageSquare size={18} />
               </button>
             </div>
@@ -810,7 +830,7 @@ export default function Dashboard() {
         ) : (
           <div className="flex flex-1 flex-col items-center justify-center text-center p-6">
             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-sm space-y-4">
-              <div className="h-20 w-20 mx-auto flex items-center justify-center rounded-3xl bg-white/5 text-purple-500">
+              <div className="h-20 w-20 mx-auto flex items-center justify-center rounded-3xl bg-white/5 text-white">
                 <MessageSquare size={40} />
               </div>
               <h2 className="text-2xl font-bold">InstaChat</h2>
@@ -821,34 +841,34 @@ export default function Dashboard() {
       </section>
 
       {/* Mobile Bottom Navigation - Hidden when a chat is active */}
-      <nav className={`md:hidden fixed bottom-0 left-0 right-0 z-50 items-center justify-around bg-black/90 backdrop-blur-xl border-t border-white/10 py-3 px-4 safe-area-bottom ${selectedChat ? "hidden" : "flex"}`}>
+      <nav className={`md:hidden fixed bottom-4 left-4 right-4 z-50 items-center justify-around bg-black/70 backdrop-blur-2xl border border-white/10 py-3 px-4 rounded-3xl shadow-2xl ${selectedChat ? "hidden" : "flex"}`}>
         <button onClick={() => { setActiveTab("chats"); setSelectedChat(null); }}
-          className={`flex flex-col items-center gap-1 transition-colors relative ${activeTab === "chats" && !selectedChat ? "text-purple-400" : "text-zinc-500"}`}>
+          className={`flex flex-col items-center gap-1 transition-colors relative ${activeTab === "chats" && !selectedChat ? "text-white" : "text-zinc-500"}`}>
           <MessageSquare size={22} />
           {Object.values(unreadCounts).reduce((a, b) => a + b, 0) > 0 && (
-            <span className="absolute -top-1 -right-2 h-4 min-w-4 px-1 bg-purple-600 rounded-full text-[9px] flex items-center justify-center font-bold text-white">
+            <span className="absolute -top-1 -right-2 h-4 min-w-4 px-1 bg-white text-black rounded-full text-[9px] flex items-center justify-center font-bold">
               {Object.values(unreadCounts).reduce((a, b) => a + b, 0)}
             </span>
           )}
           <span className="text-[10px] font-medium">Chats</span>
         </button>
         <button onClick={() => { setActiveTab("connections"); setSelectedChat(null); }}
-          className={`flex flex-col items-center gap-1 transition-colors ${activeTab === "connections" ? "text-purple-400" : "text-zinc-500"}`}>
+          className={`flex flex-col items-center gap-1 transition-colors ${activeTab === "connections" ? "text-white" : "text-zinc-500"}`}>
           <Users size={22} />
           <span className="text-[10px] font-medium">People</span>
         </button>
         <button onClick={() => { setActiveTab("online"); setSelectedChat(null); }}
-          className={`flex flex-col items-center gap-1 transition-colors ${activeTab === "online" ? "text-purple-400" : "text-zinc-500"}`}>
+          className={`flex flex-col items-center gap-1 transition-colors ${activeTab === "online" ? "text-white" : "text-zinc-500"}`}>
           <Wifi size={22} />
           <span className="text-[10px] font-medium">Online</span>
         </button>
         <button onClick={() => { setActiveTab("settings"); setSelectedChat(null); }}
-          className={`flex flex-col items-center gap-1 transition-colors ${activeTab === "settings" ? "text-purple-400" : "text-zinc-500"}`}>
+          className={`flex flex-col items-center gap-1 transition-colors ${activeTab === "settings" ? "text-white" : "text-zinc-500"}`}>
           <Settings size={22} />
           <span className="text-[10px] font-medium">Settings</span>
         </button>
         <div className="relative flex flex-col items-center gap-1">
-          <img src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.email || 'U')}&background=7c3aed&color=fff`} alt="" className="h-7 w-7 rounded-full border border-white/10" />
+          <img src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.email || 'U')}&background=ffffff&color=000`} alt="" className="h-7 w-7 rounded-full border border-white/10" />
           <span className={`absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-black ${socketConnected ? "bg-green-400" : "bg-orange-400 animate-pulse"}`} />
           <span className="text-[10px] font-medium text-zinc-500">Me</span>
         </div>
@@ -867,7 +887,7 @@ export default function Dashboard() {
               {/* Center placeholder */}
               {(isAudioOnly || (callState !== "connected" && callState !== "connecting")) && (
                 <div className="flex flex-col items-center gap-4 z-10 text-center px-6">
-                  <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-white/10 ring-4 ring-purple-500/30">
+                  <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-white/10 ring-4 ring-white/30">
                     <img src={callTarget?.photoURL || `https://ui-avatars.com/api/?name=${callTarget?.name}&background=random`} alt="" className="w-full h-full object-cover" />
                   </div>
                   <h2 className="text-xl md:text-2xl font-bold text-white">{callTarget?.name || callerName}</h2>
@@ -926,6 +946,10 @@ export default function Dashboard() {
         {isSearchOpen && <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />}
       </AnimatePresence>
 
+      <AnimatePresence>
+        {isGroupModalOpen && <CreateGroupModal isOpen={isGroupModalOpen} onClose={() => setIsGroupModalOpen(false)} connections={connections.filter(c => !c.isGroup)} />}
+      </AnimatePresence>
+
       {/* ── In-app message toast ── */}
       <AnimatePresence>
         {toast && (
@@ -945,11 +969,11 @@ export default function Dashboard() {
           >
             <div className="relative flex-shrink-0">
               <img
-                src={toast.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(toast.name)}&background=7c3aed&color=fff`}
+                src={toast.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(toast.name)}&background=ffffff&color=000`}
                 alt=""
                 className="h-10 w-10 rounded-full object-cover"
               />
-              <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-purple-500 border-2 border-[#1a1a1e] animate-pulse" />
+              <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-white border-2 border-[#1a1a1e] animate-pulse" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-white truncate">{toast.name}</p>
@@ -964,6 +988,7 @@ export default function Dashboard() {
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
     </div>
   );
 }
@@ -971,11 +996,11 @@ export default function Dashboard() {
 function NavIcon({ icon, active, onClick, badge }) {
   return (
     <button onClick={onClick}
-      className={`relative flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-xl transition-all ${active ? "bg-purple-600/15 text-purple-500" : "text-zinc-500 hover:bg-white/5 hover:text-zinc-300"}`}>
-      {active && <motion.div layoutId="nav-active" className="absolute left-0 h-6 w-0.5 rounded-r-full bg-purple-500" />}
+      className={`relative flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-2xl transition-all ${active ? "bg-white/15 text-white shadow-sm" : "text-zinc-500 hover:bg-white/5 hover:text-zinc-300"}`}>
+      {active && <motion.div layoutId="nav-active" className="absolute left-0 h-6 w-0.5 rounded-r-full bg-white" />}
       {icon}
       {badge > 0 && (
-        <span className="absolute top-1 right-1 h-4 min-w-4 px-1 bg-purple-600 rounded-full text-[9px] flex items-center justify-center font-bold text-white">
+        <span className="absolute top-1 right-1 h-4 min-w-4 px-1 bg-white text-black rounded-full text-[9px] flex items-center justify-center font-bold">
           {badge > 99 ? "99+" : badge}
         </span>
       )}
@@ -986,7 +1011,7 @@ function NavIcon({ icon, active, onClick, badge }) {
 function ChatPreview({ name, photo, online, onClick, active, unread }) {
   return (
     <button onClick={onClick}
-      className={`flex w-full items-center gap-3 rounded-xl p-3 transition-colors ${active ? "bg-purple-600/20 ring-1 ring-purple-600/50" : "hover:bg-white/5"}`}>
+      className={`flex w-full items-center gap-3 rounded-2xl p-3 transition-all ${active ? "bg-white/10 shadow-sm" : "hover:bg-white/5"}`}>
       <div className="relative flex-shrink-0">
         <img src={photo} className="h-11 w-11 rounded-full object-cover" alt="" />
         {online && <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-[#09090b] bg-green-500" />}
@@ -996,7 +1021,7 @@ function ChatPreview({ name, photo, online, onClick, active, unread }) {
         <p className="text-xs text-zinc-500 truncate">{online ? "Online" : "Offline"}</p>
       </div>
       {unread > 0 && (
-        <span className="flex-shrink-0 h-5 min-w-5 px-1.5 bg-purple-600 rounded-full text-[10px] flex items-center justify-center font-bold text-white">
+        <span className="flex-shrink-0 h-5 min-w-5 px-1.5 bg-white text-black rounded-full text-[10px] flex items-center justify-center font-bold">
           {unread > 99 ? "99+" : unread}
         </span>
       )}

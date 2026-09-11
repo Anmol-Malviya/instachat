@@ -1,8 +1,16 @@
 @echo off
-echo Starting Backend Server...
-start cmd /k "cd server && npm run dev"
+echo =========================================
+echo       Starting InstaChat Services
+echo =========================================
+echo.
 
-echo Starting Frontend...
-start cmd /k "cd instachat && npm run dev"
+echo [1/2] Starting Backend Server...
+start "InstaChat Backend" cmd /k "cd server && title InstaChat Backend && color 0A && npm run dev"
 
-echo Both services started!
+echo [2/2] Starting Frontend Next.js Server...
+start "InstaChat Frontend" cmd /k "cd instachat && title InstaChat Frontend && color 0B && npm run dev"
+
+echo.
+echo Both services have been launched in separate windows!
+echo =========================================
+pause

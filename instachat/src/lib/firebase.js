@@ -20,10 +20,14 @@ const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 let analytics;
 let messaging;
 
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
 if (typeof window !== "undefined") {
   analytics = getAnalytics(app);
   messaging = getMessaging(app);
 }
 
-export { app, analytics, messaging, getToken, onMessage };
+const storage = getStorage(app);
+
+export { app, analytics, messaging, getToken, onMessage, storage, ref, uploadBytes, getDownloadURL };
 

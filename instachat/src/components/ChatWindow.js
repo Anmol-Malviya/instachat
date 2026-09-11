@@ -10,9 +10,11 @@ import {
 import {
   Send, Paperclip, MoreVertical, Phone, Video, ArrowLeft,
   Search, X, Pin, Download, Ban, Smile, Copy, Forward,
-  Trash2, ChevronDown, Image as ImageIcon, Clock
+  Trash2, ChevronDown, Image as ImageIcon, Clock, AlertTriangle, Info, Users
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { storage, ref, uploadBytes, getDownloadURL } from "@/lib/firebase";
+import ReportModal from "./ReportModal";
 
 const EMOJI_REACTIONS = ["👍", "❤️", "😂", "😮", "😢", "😡"];
 
@@ -39,9 +41,9 @@ function LinkCard({ url }) {
   if (!meta) return null;
   return (
     <a href={meta.href} target="_blank" rel="noopener noreferrer"
-      className="block mt-2 p-2 bg-black/30 rounded-xl border border-white/10 hover:border-purple-500/50 transition-colors">
+      className="block mt-2 p-2 bg-black/30 rounded-xl border border-white/10 hover:border-white/50 transition-colors">
       <p className="text-[10px] text-zinc-500 truncate">🔗 {meta.host}</p>
-      <p className="text-xs text-purple-300 truncate">{meta.href}</p>
+      <p className="text-xs text-zinc-300 truncate">{meta.href}</p>
     </a>
   );
 }
@@ -63,9 +65,13 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
   const [isBlocked,     setIsBlocked]     = useState(false);
   const [disappearing,  setDisappearing]  = useState(false);
   const [stickerTab,    setStickerTab]    = useState(0);
+  const [isUploading,   setIsUploading]   = useState(false);
+  const [reportTarget,  setReportTarget]  = useState(null); // { id, type }
+  const [showDetails,   setShowDetails]   = useState(false);
 
   const scrollRef = useRef(null);
   const inputRef  = useRef(null);
+  const fileInputRef = useRef(null);
   const menuRef   = useRef(null);
   const pollRef   = useRef(null);
 
@@ -220,6 +226,41 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
     }
   };
 
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const storageRef = ref(storage, `chat_media/${roomId}/${Date.now()}_${file.name}`);
+      await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(storageRef);
+      
+      const msg = await apiSendMsg({
+        roomId,
+        senderId: user.uid,
+        text: "",
+        mediaUrl: url,
+        mimeType: file.type,
+        status: "sent",
+      });
+      socket?.emit("new-message", {
+        roomId,
+        senderId: user.uid,
+        receiverId: selectedChat.uid,
+        messageId: msg._id,
+        text: msg.text,
+        mediaUrl: msg.mediaUrl,
+        mimeType: msg.mimeType,
+      });
+      loadMessages();
+    } catch (err) {
+      console.error("Upload failed", err);
+      alert("Failed to upload file");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleTyping = (e) => {
     setNewMessage(e.target.value);
     socket?.emit(e.target.value ? "typing" : "stop-typing", roomId);
@@ -328,10 +369,11 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
   ];
 
   return (
-    <div className="flex h-full flex-col bg-[#0c0c0e] relative" style={wallpaper ? { background: wallpaper } : {}}>
+    <div className="flex h-full w-full bg-[#0c0c0e] relative">
+      <div className="flex h-full flex-1 flex-col relative min-w-0" style={wallpaper ? { background: wallpaper } : {}}>
 
       {/* Header */}
-      <header className="flex items-center justify-between border-b border-white/5 bg-black/60 backdrop-blur-md px-4 py-3 flex-shrink-0 z-10">
+      <header className="flex items-center justify-between border-b border-white/5 bg-black/40 backdrop-blur-3xl px-4 py-3 flex-shrink-0 z-10">
         <div className="flex items-center gap-3">
           {onBack && (
             <button onClick={onBack} className="md:hidden text-zinc-400 hover:text-white">
@@ -353,8 +395,9 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
         <div className="flex items-center gap-2 md:gap-3 text-zinc-400">
           {disappearing && <Clock size={14} className="text-yellow-500 hidden sm:block" title="Disappearing messages on" />}
           <button onClick={() => setShowSearch(s => !s)} className="p-1 hover:text-white transition-colors"><Search size={18} /></button>
-          <button onClick={() => onStartCall?.("audio")} className="p-1 hover:text-white transition-colors"><Phone size={18} /></button>
-          <button onClick={() => onStartCall?.("video")} className="p-1 hover:text-white transition-colors"><Video size={18} /></button>
+          {!selectedChat.isGroup && <button onClick={() => onStartCall?.("audio")} className="p-1 hover:text-white transition-colors"><Phone size={18} /></button>}
+          {!selectedChat.isGroup && <button onClick={() => onStartCall?.("video")} className="p-1 hover:text-white transition-colors"><Video size={18} /></button>}
+          <button onClick={() => setShowDetails(s => !s)} className={`p-1 transition-colors ${showDetails ? "text-white" : "hover:text-white"}`}><Info size={18} /></button>
           <div className="relative" ref={menuRef}>
             <button onClick={() => setShowMenu(s => !s)} className="hover:text-white transition-colors"><MoreVertical size={18} /></button>
             <AnimatePresence>
@@ -368,7 +411,7 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
                   <div className="flex gap-2 px-4 pb-3 flex-wrap">
                     {wallpapers.map(w => (
                       <button key={w.label} onClick={() => setWallpaperOption(w.value)} title={w.label}
-                        className={`h-6 w-6 rounded-full border-2 transition-all ${wallpaper === w.value ? "border-purple-500 scale-110" : "border-white/10"}`}
+                        className={`h-6 w-6 rounded-full border-2 transition-all ${wallpaper === w.value ? "border-white scale-110" : "border-white/10"}`}
                         style={w.value ? { background: w.value } : { background: "#1a1a1e" }}>
                         {!w.value && <span className="text-[8px] flex items-center justify-center h-full text-zinc-400">✕</span>}
                       </button>
@@ -376,6 +419,7 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
                   </div>
                   <div className="border-t border-white/5" />
                   <MenuItem icon={<Ban size={14} />} label={isBlocked ? "Unblock User" : "Block User"} onClick={toggleBlock} danger={!isBlocked} />
+                  <MenuItem icon={<AlertTriangle size={14} />} label="Report User" onClick={() => { setReportTarget({ id: selectedChat.uid, type: 'user' }); setShowMenu(false); }} danger />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -401,9 +445,9 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
       <AnimatePresence>
         {pinnedMsg && (
           <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -20, opacity: 0 }}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-900/20 border-b border-purple-500/20 flex-shrink-0">
-            <Pin size={12} className="text-purple-400 flex-shrink-0" />
-            <p className="text-xs text-purple-300 truncate flex-1">{pinnedMsg.text}</p>
+            className="flex items-center gap-2 px-4 py-2 bg-white/5 border-b border-white/20 flex-shrink-0">
+            <Pin size={12} className="text-white flex-shrink-0" />
+            <p className="text-xs text-zinc-300 truncate flex-1">{pinnedMsg.text}</p>
             <button onClick={() => updateRoom(roomId, { pinnedMsg: null }).then(() => setPinnedMsg(null)).catch(() => {})}
               className="text-zinc-500 hover:text-white"><X size={12} /></button>
           </motion.div>
@@ -436,19 +480,30 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
                 </button>
 
                 <div onContextMenu={e => handleLongPress(e, msg)}
-                  className={`rounded-2xl px-4 py-2.5 cursor-pointer ${
-                    msg.isSticker ? "bg-transparent text-4xl px-2"
-                    : isMe ? "bg-purple-600 text-white rounded-tr-none"
-                    : "bg-white/8 text-zinc-200 rounded-tl-none border border-white/5"
+                  className={`rounded-[1.25rem] px-4 py-2.5 cursor-pointer shadow-sm ${
+                    msg.isSticker ? "bg-transparent text-4xl px-2 shadow-none"
+                    : isMe ? "bg-white text-black rounded-tr-sm"
+                    : "bg-[#18181b] text-white rounded-tl-sm border border-white/5"
                   }`}>
-                  {!msg.isSticker && <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</p>}
+                  
+                  {msg.mediaUrl && (
+                    <div className="mb-2 rounded-xl overflow-hidden max-w-full">
+                      {msg.mimeType?.startsWith('video/') ? (
+                        <video src={msg.mediaUrl} controls className="max-h-60 w-full object-cover" />
+                      ) : (
+                        <img src={msg.mediaUrl} alt="" className="max-h-60 w-full object-cover" />
+                      )}
+                    </div>
+                  )}
+
+                  {!msg.isSticker && msg.text && <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</p>}
                   {msg.isSticker  && <span className="text-4xl">{msg.text}</span>}
                   {urls.length > 0 && !msg.isSticker && urls.map((u, idx) => <LinkCard key={idx} url={u} />)}
-                  <div className={`flex items-center gap-1 mt-1 ${isMe ? "justify-end" : "justify-start"}`}>
-                    <p className={`text-[10px] ${isMe ? "text-purple-200" : "text-zinc-500"}`}>
+                  <div className={`flex items-center gap-1.5 mt-1 ${isMe ? "justify-end" : "justify-start"}`}>
+                    <p className={`text-[10px] font-medium ${isMe ? "text-zinc-500" : "text-zinc-500"}`}>
                       {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "now"}
                     </p>
-                    {isMe && <span className="ml-1">{getStatusIcon(msg)}</span>}
+                    {isMe && <span className="ml-1 opacity-70">{getStatusIcon(msg)}</span>}
                   </div>
                 </div>
 
@@ -489,10 +544,23 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
             <MenuItem icon={<Copy size={13} />} label="Copy" onClick={() => copyMessage(contextMenu.msg.text)} />
             <MenuItem icon={<Pin size={13} />} label="Pin Message" onClick={() => { pinMessage(contextMenu.msg); setContextMenu(null); }} />
             <MenuItem icon={<Smile size={13} />} label="React" onClick={() => { setReactionPicker(contextMenu.msgId); setContextMenu(null); }} />
-            {contextMenu.msg.senderId === user.uid && (
+            {contextMenu.msg.senderId === user.uid ? (
               <MenuItem icon={<Trash2 size={13} />} label="Delete" danger onClick={() => deleteMsg(contextMenu.msgId)} />
+            ) : (
+              <MenuItem icon={<AlertTriangle size={13} />} label="Report" danger onClick={() => { setReportTarget({ id: contextMenu.msgId, type: 'message' }); setContextMenu(null); }} />
             )}
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {reportTarget && (
+          <ReportModal 
+            isOpen={true} 
+            onClose={() => setReportTarget(null)} 
+            targetId={reportTarget.id} 
+            targetType={reportTarget.type} 
+          />
         )}
       </AnimatePresence>
 
@@ -511,7 +579,7 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
             <div className="flex border-b border-white/5">
               {STICKER_PACKS.map((_, idx) => (
                 <button key={idx} onClick={() => setStickerTab(idx)}
-                  className={`flex-1 py-2 text-xs transition-colors ${stickerTab === idx ? "text-purple-400 border-b-2 border-purple-500" : "text-zinc-500"}`}>
+                  className={`flex-1 py-2 text-xs transition-colors ${stickerTab === idx ? "text-white border-b-2 border-white" : "text-zinc-500"}`}>
                   {["😀", "👍", "🔥", "🐶"][idx]}
                 </button>
               ))}
@@ -528,22 +596,63 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
 
       {/* Input */}
       {!isBlocked && (
-        <footer className="bg-black/60 backdrop-blur-md p-2 md:p-3 flex-shrink-0 border-t border-white/5 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] md:pb-3">
-          <form onSubmit={sendMessage} className="flex items-center gap-2 rounded-2xl bg-white/5 p-1.5 md:p-2 pr-3 focus-within:ring-1 focus-within:ring-purple-500/50">
+        <footer className="bg-black/40 backdrop-blur-3xl p-3 md:p-4 flex-shrink-0 border-t border-white/5 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] md:pb-4">
+          <form onSubmit={sendMessage} className="flex items-center gap-2 rounded-[1.5rem] bg-white/5 p-1.5 md:p-2 pr-3 focus-within:ring-1 focus-within:ring-white/50 border border-white/5 shadow-inner">
             <button type="button" onClick={() => setShowStickers(s => !s)}
               className={`p-1.5 md:p-2 transition-colors ${showStickers ? "text-yellow-400" : "text-zinc-500 hover:text-white"}`}>
               <Smile size={20} />
+            </button>
+            <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="image/*,video/*" className="hidden" />
+            <button type="button" onClick={() => fileInputRef.current?.click()}
+              className="p-1.5 md:p-2 transition-colors text-zinc-500 hover:text-white">
+              {isUploading ? <span className="animate-spin h-5 w-5 border-2 border-white/20 border-t-white rounded-full inline-block" /> : <Paperclip size={20} />}
             </button>
             <input ref={inputRef} type="text" placeholder="Type a message..."
               value={newMessage} onChange={handleTyping}
               className="flex-1 bg-transparent py-2 px-1 text-sm outline-none placeholder:text-zinc-600 text-white min-w-0" />
             <button type="submit" disabled={!newMessage.trim()}
-              className="flex h-8 w-8 md:h-9 md:w-9 items-center justify-center rounded-xl bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-40 transition-all flex-shrink-0">
+              className="flex h-8 w-8 md:h-9 md:w-9 items-center justify-center rounded-xl bg-white text-black hover:bg-zinc-200 disabled:opacity-40 transition-all flex-shrink-0">
               <Send size={16} />
             </button>
           </form>
         </footer>
       )}
+      </div>
+
+      {/* Details Pane (3rd Column) */}
+      <AnimatePresence>
+        {showDetails && (
+          <motion.div initial={{ width: 0, opacity: 0 }} animate={{ width: 300, opacity: 1 }} exit={{ width: 0, opacity: 0 }}
+            className="flex-shrink-0 border-l border-white/5 bg-[#09090b] flex flex-col hidden md:flex">
+            <div className="p-6 flex flex-col items-center border-b border-white/5">
+              <img src={selectedChat.photoURL || `https://ui-avatars.com/api/?name=${selectedChat.name}&background=random`} alt="" className="w-24 h-24 rounded-full object-cover mb-4" />
+              <h2 className="text-lg font-bold text-white text-center">{selectedChat.name}</h2>
+              <p className="text-xs text-zinc-400">{selectedChat.isGroup ? "Group Chat" : "Direct Message"}</p>
+            </div>
+            
+            <div className="p-4 flex-1 overflow-y-auto custom-scrollbar space-y-6">
+              {selectedChat.isGroup && selectedChat.members && (
+                <div>
+                  <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <Users size={14} /> Members ({selectedChat.members.length})
+                  </h3>
+                  <div className="space-y-2">
+                    {selectedChat.members.map(m => (
+                      <div key={m.userId} className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs text-white">
+                          {m.userId === user.uid ? "You" : "U"}
+                        </div>
+                        <span className="text-sm text-zinc-300">{m.userId === user.uid ? "You" : "Member"}</span>
+                        {m.role === 'admin' && <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded-full text-white ml-auto">Admin</span>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
