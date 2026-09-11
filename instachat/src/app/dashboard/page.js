@@ -14,7 +14,7 @@ import { getRequests, acceptRequest as apiAcceptRequest, batchUsers, getUnreadCo
 import { messaging, getToken, onMessage } from "@/lib/firebase";
 import { io } from "socket.io-client";
 
-const SOCKET_SERVER = process.env.NEXT_PUBLIC_SOCKET_SERVER_URL || "http://localhost:5000";
+const SOCKET_SERVER = process.env.NEXT_PUBLIC_SOCKET_URL || process.env.NEXT_PUBLIC_SOCKET_SERVER_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 const VAPID_PUBLIC_KEY = "BIWtA1MgjhDdv3oKcKlRhoyyD_YSCEX1n3WfVsQPPGu20IE64UhU4QCqgnHmLN2vjTo3BaQ4ILjNzNjMuFak7tU";
 
 function urlBase64ToUint8Array(base64String) {
