@@ -4,7 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageSquare, Phone, Users, Settings, Search, LogOut, Plus, Bell, Mic, MicOff, Video, VideoOff, PhoneOff, MonitorUp, Wifi } from "lucide-react";
+import { MessageSquare, Phone, Users, Settings, Search, LogOut, Plus, Bell, Mic, MicOff, Video, VideoOff, PhoneOff, MonitorUp, Wifi, RefreshCcw } from "lucide-react";
 import SearchModal from "@/components/SearchModal";
 import ChatWindow from "@/components/ChatWindow";
 import CompleteProfileModal from "@/components/CompleteProfileModal";
@@ -79,6 +79,7 @@ export default function Dashboard() {
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [callTarget, setCallTarget] = useState(null); // who we're calling / who called us
+  const [facingMode, setFacingMode] = useState("user");
 
   // WebRTC refs
   const socketRef = useRef(null);            // stable ref for closures (WebRTC)
@@ -500,7 +501,7 @@ export default function Dashboard() {
       let stream;
       try {
         const constraints = {
-          video: isVideo ? { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" } : false,
+          video: isVideo ? { width: { ideal: 1920 }, height: { ideal: 1080 }, facingMode: facingMode } : false,
           audio: { echoCancellation: true, noiseSuppression: true, sampleRate: 44100 },
         };
         stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -555,7 +556,7 @@ export default function Dashboard() {
       let stream;
       try {
         const constraints = {
-          video: isVideo ? { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" } : false,
+          video: isVideo ? { width: { ideal: 1920 }, height: { ideal: 1080 }, facingMode: facingMode } : false,
           audio: { echoCancellation: true, noiseSuppression: true, sampleRate: 44100 },
         };
         stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -656,6 +657,42 @@ export default function Dashboard() {
         };
       }
     } catch { console.log("Screen share cancelled"); }
+  };
+
+  const flipCamera = async () => {
+    if (!localStreamRef.current || isAudioOnly || !pcRef.current) return;
+    
+    try {
+      const newMode = facingMode === "user" ? "environment" : "user";
+      const constraints = {
+        video: { width: { ideal: 1920 }, height: { ideal: 1080 }, facingMode: newMode },
+        audio: false // Keep existing audio track
+      };
+      
+      const newStream = await navigator.mediaDevices.getUserMedia(constraints);
+      const newVideoTrack = newStream.getVideoTracks()[0];
+      
+      const sender = pcRef.current.getSenders().find(s => s.track?.kind === "video");
+      if (sender) {
+        await sender.replaceTrack(newVideoTrack);
+      }
+      
+      // Stop old video track
+      const oldVideoTrack = localStreamRef.current.getVideoTracks()[0];
+      if (oldVideoTrack) {
+        localStreamRef.current.removeTrack(oldVideoTrack);
+        oldVideoTrack.stop();
+      }
+      
+      localStreamRef.current.addTrack(newVideoTrack);
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = localStreamRef.current;
+      }
+      
+      setFacingMode(newMode);
+    } catch (err) {
+      console.error("[Call] flipCamera failed:", err);
+    }
   };
 
   // ── Audio control side effect ──
@@ -936,6 +973,11 @@ export default function Dashboard() {
                     {!isAudioOnly && (
                       <button onClick={shareScreen} className="hidden md:flex w-11 h-11 bg-blue-500/80 hover:bg-blue-500 rounded-full items-center justify-center transition-colors">
                         <MonitorUp size={20} />
+                      </button>
+                    )}
+                    {!isAudioOnly && (
+                      <button onClick={flipCamera} className="flex md:hidden w-11 h-11 bg-white/15 hover:bg-white/25 rounded-full items-center justify-center transition-colors" title="Flip Camera">
+                        <RefreshCcw size={20} />
                       </button>
                     )}
                     <button onClick={endCall} className="w-12 h-12 md:w-14 md:h-14 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center transition-colors shadow-lg shadow-red-500/30">
