@@ -2,15 +2,15 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
-import {
-  getMessages, sendMessage as apiSendMsg, updateMsgStatus,
+import { getMessages, sendMessage as apiSendMsg, updateMsgStatus,
   markRoomRead, reactToMessage, deleteMessage as apiDeleteMsg,
   getRoom, updateRoom,
 } from "@/lib/api";
+import { cacheMessages, getCachedMessages, queuePendingMessage, getPendingMessages, removePendingMessage } from "@/lib/offlineStore";
 import {
   Send, Paperclip, MoreVertical, Phone, Video, ArrowLeft,
   Search, X, Pin, Download, Ban, Smile, Copy, Forward,
-  Trash2, ChevronDown, Image as ImageIcon, Clock, AlertTriangle, Info, Users
+  Trash2, ChevronDown, Image as ImageIcon, Clock, AlertTriangle, Info, Users, CloudOff
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { storage, ref, uploadBytes, getDownloadURL } from "@/lib/firebase";
@@ -68,6 +68,7 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
   const [isUploading,   setIsUploading]   = useState(false);
   const [reportTarget,  setReportTarget]  = useState(null); // { id, type }
   const [showDetails,   setShowDetails]   = useState(false);
+  const [isOffline,     setIsOffline]     = useState(false);
 
   const scrollRef = useRef(null);
   const inputRef  = useRef(null);
@@ -90,22 +91,49 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  // ── Track Offline Status ────────────────────────────
+  useEffect(() => {
+    setIsOffline(!navigator.onLine);
+    const setOnline = () => setIsOffline(false);
+    const setOffline = () => setIsOffline(true);
+    window.addEventListener('online', setOnline);
+    window.addEventListener('offline', setOffline);
+    return () => {
+      window.removeEventListener('online', setOnline);
+      window.removeEventListener('offline', setOffline);
+    };
+  }, []);
+
   // ── Load messages + room metadata ───────────────────
   const loadMessages = useCallback(async () => {
     if (!roomId) return;
     try {
-      const msgs = await getMessages(roomId);
-      // Filter disappearing > 24h
+      const cached = await getCachedMessages(roomId);
+      const pending = await getPendingMessages(roomId);
+      
       const now = Date.now();
-      const filtered = msgs.filter(m => {
+      const filterDisappearing = (m) => {
         if (m.disappearing && m.createdAt) {
           return (now - new Date(m.createdAt).getTime()) < 86400000;
         }
         return true;
-      });
-      setMessages(filtered);
-      // Mark as read
-      await markRoomRead(roomId, user.uid).catch(() => {});
+      };
+
+      if (cached.length > 0 || pending.length > 0) {
+        setMessages([...cached.filter(filterDisappearing), ...pending]);
+      }
+
+      if (navigator.onLine) {
+        const msgs = await getMessages(roomId);
+        const filtered = msgs.filter(filterDisappearing);
+        await cacheMessages(roomId, filtered);
+        
+        const currentPending = await getPendingMessages(roomId);
+        setMessages([...filtered, ...currentPending]);
+
+        // Mark as read
+        await markRoomRead(roomId, user.uid).catch(() => {});
+      }
     } catch (err) {
       console.error("loadMessages:", err);
     }
@@ -127,6 +155,45 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
     loadMessages();
     loadRoom();
   }, [loadMessages, loadRoom]);
+
+  // ── Auto-Sync Pending Messages when Online ──────────
+  useEffect(() => {
+    const flushQueue = async () => {
+      if (!roomId || !user || !navigator.onLine) return;
+      
+      const pending = await getPendingMessages(roomId);
+      if (pending.length === 0) return;
+
+      for (const msg of pending) {
+        try {
+          const sent = await apiSendMsg({
+            roomId,
+            senderId: msg.senderId,
+            text: msg.text,
+            isSticker: msg.isSticker,
+            disappearing: msg.disappearing,
+            status: "sent",
+          });
+          socket?.emit("new-message", {
+            roomId,
+            senderId: msg.senderId,
+            receiverId: selectedChat.uid,
+            messageId: sent._id,
+            text: sent.text,
+            isSticker: sent.isSticker,
+          });
+          await removePendingMessage(roomId, msg.localId);
+        } catch (e) {
+          console.error("Failed to sync message", e);
+        }
+      }
+      loadMessages();
+    };
+
+    window.addEventListener('online', flushQueue);
+    if (navigator.onLine) flushQueue();
+    return () => window.removeEventListener('online', flushQueue);
+  }, [roomId, user, socket, selectedChat?.uid, loadMessages]);
 
   // ── Polling for new messages (500ms) ────────────────
   useEffect(() => {
@@ -202,6 +269,23 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
     if (!text.trim() || isBlocked) return;
     if (!overrideText) setNewMessage("");
     socket?.emit("stop-typing", roomId);
+
+    if (!navigator.onLine) {
+      const pendingMsg = {
+        _id: `temp_${Date.now()}`,
+        localId: Date.now().toString(),
+        roomId,
+        senderId: user.uid,
+        text,
+        isSticker: isSticker || false,
+        disappearing,
+        status: "pending",
+        createdAt: new Date().toISOString()
+      };
+      await queuePendingMessage(roomId, pendingMsg);
+      loadMessages();
+      return;
+    }
 
     try {
       const msg = await apiSendMsg({
@@ -349,6 +433,7 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
 
   const getStatusIcon = (msg) => {
     if (msg.senderId !== user.uid) return null;
+    if (msg.status === "pending")   return <Clock size={10} className="text-zinc-500" />;
     if (msg.status === "read")      return <span className="text-blue-400 text-[10px] font-semibold">Seen</span>;
     if (msg.status === "delivered") return <span className="text-zinc-400 text-[10px]">Delivered</span>;
     return <span className="text-zinc-500 text-[10px]">Sent</span>;
@@ -383,20 +468,22 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
           <div className="relative flex-shrink-0">
             <img src={selectedChat.photoURL || `https://ui-avatars.com/api/?name=${selectedChat.name}&background=random`}
               alt="" className="h-8 w-8 md:h-9 md:w-9 rounded-full object-cover" />
-            {selectedChat.status === "online" && (
+            {selectedChat.status === "online" && !isOffline && (
               <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-black bg-green-500" />
             )}
           </div>
           <div>
             <h3 className="font-bold text-sm">{selectedChat.name}</h3>
-            <p className="text-xs text-green-500">{isTyping ? "typing..." : selectedChat.status === "online" ? "Online" : "Offline"}</p>
+            <p className="text-xs text-green-500">
+              {isOffline ? <span className="text-zinc-500 flex items-center gap-1"><CloudOff size={10} /> Offline</span> : isTyping ? "typing..." : selectedChat.status === "online" ? "Online" : "Offline"}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2 md:gap-3 text-zinc-400">
           {disappearing && <Clock size={14} className="text-yellow-500 hidden sm:block" title="Disappearing messages on" />}
           <button onClick={() => setShowSearch(s => !s)} className="p-1 hover:text-white transition-colors"><Search size={18} /></button>
-          {!selectedChat.isGroup && <button onClick={() => onStartCall?.("audio")} className="p-1 hover:text-white transition-colors"><Phone size={18} /></button>}
-          {!selectedChat.isGroup && <button onClick={() => onStartCall?.("video")} className="p-1 hover:text-white transition-colors"><Video size={18} /></button>}
+          {!selectedChat.isGroup && <button onClick={() => onStartCall?.("audio")} disabled={isOffline} className="p-1 hover:text-white transition-colors disabled:opacity-30"><Phone size={18} /></button>}
+          {!selectedChat.isGroup && <button onClick={() => onStartCall?.("video")} disabled={isOffline} className="p-1 hover:text-white transition-colors disabled:opacity-30"><Video size={18} /></button>}
           <button onClick={() => setShowDetails(s => !s)} className={`p-1 transition-colors ${showDetails ? "text-white" : "hover:text-white"}`}><Info size={18} /></button>
           <div className="relative" ref={menuRef}>
             <button onClick={() => setShowMenu(s => !s)} className="hover:text-white transition-colors"><MoreVertical size={18} /></button>

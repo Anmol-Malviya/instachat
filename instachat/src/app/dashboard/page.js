@@ -335,6 +335,13 @@ export default function Dashboard() {
   const fetchDashboardData = useCallback(async () => {
     if (!user) return;
     try {
+      if (!navigator.onLine) {
+        // Load offline cached rooms list
+        const cachedRooms = await import("@/lib/offlineStore").then(m => m.getCachedRoomList());
+        if (cachedRooms.length > 0) setConnections(cachedRooms);
+        return;
+      }
+
       // 1. Pending friend requests
       const reqs = await getRequests(user.uid);
       setIncomingRequests(reqs);
@@ -359,6 +366,7 @@ export default function Dashboard() {
 
         const allChats = [...formattedGroups, ...cons];
         setConnections(allChats);
+        import("@/lib/offlineStore").then(m => m.cacheRoomList(allChats));
         
         // 3. Unread counts per connection
         const counts = {};
