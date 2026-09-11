@@ -501,7 +501,7 @@ export default function Dashboard() {
       let stream;
       try {
         const constraints = {
-          video: isVideo ? { width: { ideal: 1920 }, height: { ideal: 1080 }, facingMode: facingMode } : false,
+          video: isVideo ? { width: { ideal: 3840 }, height: { ideal: 2160 }, facingMode: facingMode } : false,
           audio: { echoCancellation: true, noiseSuppression: true, sampleRate: 44100 },
         };
         stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -556,7 +556,7 @@ export default function Dashboard() {
       let stream;
       try {
         const constraints = {
-          video: isVideo ? { width: { ideal: 1920 }, height: { ideal: 1080 }, facingMode: facingMode } : false,
+          video: isVideo ? { width: { ideal: 3840 }, height: { ideal: 2160 }, facingMode: facingMode } : false,
           audio: { echoCancellation: true, noiseSuppression: true, sampleRate: 44100 },
         };
         stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -665,7 +665,7 @@ export default function Dashboard() {
     try {
       const newMode = facingMode === "user" ? "environment" : "user";
       const constraints = {
-        video: { width: { ideal: 1920 }, height: { ideal: 1080 }, facingMode: newMode },
+        video: { width: { ideal: 3840 }, height: { ideal: 2160 }, facingMode: newMode },
         audio: false // Keep existing audio track
       };
       
@@ -926,7 +926,7 @@ export default function Dashboard() {
 
               {/* Remote video */}
               <video ref={remoteVideoRef} autoPlay playsInline
-                className={`absolute inset-0 w-full h-full object-cover ${callState !== "connected" || isAudioOnly ? "hidden" : ""}`} />
+                className={`absolute inset-0 w-full h-full object-contain ${callState !== "connected" || isAudioOnly ? "hidden" : ""}`} />
 
               {/* Center placeholder */}
               {(isAudioOnly || (callState !== "connected" && callState !== "connecting")) && (
