@@ -6,7 +6,7 @@ import { updateUser } from "@/lib/api";
 import { getAuth, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
 import { app } from "@/lib/firebase";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, Lock, Phone, Calendar, Save, CheckCircle2, AlertCircle, ShieldCheck, Sun, Moon, Monitor, Bell, LogOut } from "lucide-react";
+import { User, Lock, Phone, Calendar, Save, CheckCircle2, AlertCircle, ShieldCheck, Monitor, Bell, LogOut } from "lucide-react";
 
 export default function SettingsPanel() {
   const { user, profileData, refreshProfile, logout } = useAuth();
@@ -25,37 +25,6 @@ export default function SettingsPanel() {
   const [loading,    setLoading]    = useState(false);
   const [success,    setSuccess]    = useState("");
   const [error,      setError]      = useState("");
-  const [colorMode,  setColorMode]  = useState("dark");
-
-  useEffect(() => {
-    const saved = localStorage.getItem("ic_theme") || "dark";
-    setColorMode(saved);
-    applyTheme(saved);
-  }, []);
-
-  const applyTheme = (mode) => {
-    const root = document.documentElement;
-    if (mode === "light") {
-      root.style.setProperty("--bg-main", "#f4f4f8");
-      root.style.setProperty("--bg-card", "#ffffff");
-      root.classList.add("light-mode");
-    } else if (mode === "dark") {
-      root.style.setProperty("--bg-main", "#09090b");
-      root.style.setProperty("--bg-card", "#141416");
-      root.classList.remove("light-mode");
-    } else {
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      applyTheme(prefersDark ? "dark" : "light");
-      return;
-    }
-    localStorage.setItem("ic_theme", mode);
-  };
-
-  const handleThemeChange = (mode) => {
-    setColorMode(mode);
-    applyTheme(mode);
-    localStorage.setItem("ic_theme", mode);
-  };
 
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
@@ -139,7 +108,6 @@ export default function SettingsPanel() {
           {[
             { id: "profile",    label: "Profile",  icon: <User size={15} /> },
             { id: "security",   label: "Security", icon: <ShieldCheck size={15} /> },
-            { id: "appearance", label: "Theme",    icon: <Sun size={15} /> },
             { id: "notifications", label: "Notifications", icon: <Bell size={15} /> },
           ].map((tab) => (
             <button
@@ -284,60 +252,6 @@ export default function SettingsPanel() {
           </motion.form>
         )}
 
-        {/* Appearance Tab */}
-        {activeTab === "appearance" && (
-          <motion.div key="appearance" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
-            <div className="bg-white/[0.03] border border-white/8 rounded-2xl overflow-hidden">
-              <p className="text-[10px] uppercase tracking-widest font-bold text-zinc-500 px-4 pt-4 pb-3">Color Theme</p>
-              <div className="grid grid-cols-3 gap-3 px-4 pb-4">
-                {[
-                  { id: "dark",   label: "Dark",   icon: <Moon size={16} />,    bg: "#09090b", nav: "#000000", msg: "#7c3aed", bubble: "#1e1e22" },
-                  { id: "light",  label: "Light",  icon: <Sun size={16} />,     bg: "#e8eaf6", nav: "#4c1d95", msg: "#7c3aed", bubble: "#ffffff" },
-                  { id: "system", label: "System", icon: <Monitor size={16} />, bg: "#1a1a2e", nav: "#2d1b69", msg: "#7c3aed", bubble: "#2a2a3e" },
-                ].map(opt => (
-                  <button key={opt.id} onClick={() => handleThemeChange(opt.id)}
-                    className={`flex flex-col items-center gap-2.5 p-3 rounded-2xl border-2 transition-all active:scale-95 ${
-                      colorMode === opt.id ? "border-white bg-white/5" : "border-white/8 bg-white/[0.02] hover:border-white/30"
-                    }`}>
-                    <div className="w-full rounded-xl overflow-hidden border border-white/10 flex" style={{ height: 52 }}>
-                      <div className="w-4 h-full flex flex-col items-center gap-1 pt-1.5" style={{ background: opt.nav }}>
-                        <div className="w-2 h-2 rounded-full bg-white/40" />
-                        <div className="w-2 h-1.5 rounded bg-white/20" />
-                        <div className="w-2 h-1.5 rounded bg-white/20" />
-                      </div>
-                      <div className="flex-1 flex flex-col justify-end gap-1 p-1.5" style={{ background: opt.bg }}>
-                        <div className="self-start h-1.5 rounded-full bg-white/20" style={{ width: "55%" }} />
-                        <div className="self-end h-1.5 rounded-full" style={{ width: "40%", background: opt.msg }} />
-                        <div className="self-start h-1.5 rounded-full" style={{ width: "45%", background: opt.bubble, border: "0.5px solid rgba(255,255,255,0.1)" }} />
-                      </div>
-                    </div>
-                    <div className={`flex items-center gap-1 text-xs font-semibold ${colorMode === opt.id ? "text-white" : "text-zinc-400"}`}>
-                      {opt.icon}{opt.label}
-                    </div>
-                    {colorMode === opt.id && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className={`flex items-center gap-3 p-4 rounded-2xl border ${
-              colorMode === "light" ? "bg-amber-500/10 border-amber-500/20"
-              : colorMode === "dark" ? "bg-white/5 border-white/20"
-              : "bg-blue-500/10 border-blue-500/20"
-            }`}>
-              <span className="text-2xl">{colorMode === "dark" ? "🌙" : colorMode === "light" ? "☀️" : "💻"}</span>
-              <div>
-                <p className="text-sm font-bold text-white">
-                  {colorMode === "dark" ? "Dark Mode Active" : colorMode === "light" ? "Light Mode Active" : "System Mode Active"}
-                </p>
-                <p className="text-xs text-zinc-500 mt-0.5">
-                  {colorMode === "dark" && "Easy on the eyes — great for night-time chats."}
-                  {colorMode === "light" && "Bright & clean — saved to your device."}
-                  {colorMode === "system" && "Automatically follows your OS preference."}
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        )}
 
         {/* Notifications Tab */}
         {activeTab === "notifications" && (
