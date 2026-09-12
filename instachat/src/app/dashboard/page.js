@@ -742,16 +742,14 @@ export default function Dashboard() {
             <NavIcon icon={<MessageSquare size={20} />} active={activeTab === "chats"} onClick={() => setActiveTab("chats")}
               badge={Object.values(unreadCounts).reduce((a, b) => a + b, 0)} />
             <NavIcon icon={<Users size={20} />} active={activeTab === "connections"} onClick={() => setActiveTab("connections")} />
-            <NavIcon icon={<Wifi size={20} />} active={activeTab === "online"} onClick={() => setActiveTab("online")} />
           </div>
         </div>
         <div className="flex flex-col gap-5 items-center">
-          <NavIcon icon={<Settings size={20} />} active={activeTab === "settings"} onClick={() => setActiveTab("settings")} />
           <button onClick={logout} className="text-zinc-500 hover:text-red-500 transition-colors"><LogOut size={20} /></button>
-          <div className="relative">
-            <img src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.email || 'U')}&background=ffffff&color=000`} alt="" className="h-8 w-8 md:h-9 md:w-9 rounded-full border border-white/10" />
+          <button onClick={() => setActiveTab("settings")} className="relative transition-transform active:scale-95">
+            <img src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.email || 'U')}&background=ffffff&color=000`} alt="" className={`h-8 w-8 md:h-10 md:w-10 rounded-full border-2 transition-colors ${activeTab === "settings" ? "border-white" : "border-white/10 hover:border-white/30"}`} />
             <span title={socketConnected ? "Connected" : "Connecting..."} className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-black ${socketConnected ? "bg-green-400" : "bg-orange-400 animate-pulse"}`} />
-          </div>
+          </button>
         </div>
       </nav>
 
@@ -761,27 +759,8 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-bold capitalize">{activeTab === "online" ? "Online Now" : activeTab}</h1>
             <div className="flex gap-2">
-              <button 
-                onClick={() => {
-                  if (typeof Notification !== 'undefined') {
-                    if (Notification.permission === 'granted') {
-                      new Notification("InstaChat", { body: "Notifications are working! ✅", icon: "/icon-192x192.png" });
-                    } else {
-                      alert(`Notifications are ${Notification.permission}. Enable them in Settings or browser bar.`);
-                      Notification.requestPermission();
-                    }
-                  }
-                }}
-                title="Test Notification"
-                className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 text-zinc-400"
-              >
-                <Bell size={16} />
-              </button>
               <button onClick={() => setIsSearchOpen(true)} className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 text-zinc-400">
                 <Search size={16} />
-              </button>
-              <button onClick={() => setIsGroupModalOpen(true)} className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-black hover:bg-zinc-200">
-                <Plus size={18} />
               </button>
             </div>
           </div>
@@ -805,6 +784,24 @@ export default function Dashboard() {
                   <button onClick={() => acceptRequest(req)} className="bg-white text-black text-[10px] px-3 py-1 rounded-md font-bold hover:bg-zinc-200">Accept</button>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Active Now Row (Horizontal Scroll) */}
+          {activeTab === "chats" && connections.filter(c => c.status === "online").length > 0 && (
+            <div className="mb-4">
+              <p className="text-[10px] uppercase tracking-wider text-zinc-500 font-bold mb-2 px-1">Active Now</p>
+              <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2 px-1">
+                {connections.filter(c => c.status === "online").map(con => (
+                  <button key={con.uid} onClick={() => setSelectedChat(con)} className="flex flex-col items-center gap-1 flex-shrink-0 w-12 transition-transform active:scale-95">
+                    <div className="relative">
+                      <img src={con.photoURL} className="h-12 w-12 rounded-full object-cover border-2 border-green-500 p-0.5" alt="" />
+                      <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-[#09090b] bg-green-500" />
+                    </div>
+                    <span className="text-[10px] truncate w-full text-center text-zinc-300">{con.name.split(' ')[0]}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
@@ -839,27 +836,15 @@ export default function Dashboard() {
               </button>
             </div>
           ))}
-          {activeTab === "online" && (
-            connections.filter(c => c.status === "online").length === 0 ? (
-              <div className="text-center py-16 opacity-20">
-                <Wifi className="mx-auto mb-2" size={32} />
-                <p className="text-xs">No one is online</p>
-              </div>
-            ) : connections.filter(c => c.status === "online").map(con => (
-              <div key={con.uid} className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5 mb-2 cursor-pointer hover:bg-white/8 transition-colors"
-                onClick={() => { setSelectedChat(con); setActiveTab("chats"); }}>
-                <div className="relative">
-                  <img src={con.photoURL} className="h-11 w-11 rounded-full" alt="" />
-                  <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-[#09090b] bg-green-500 animate-pulse" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold">{con.name}</p>
-                  <p className="text-[10px] text-green-500">● Online now</p>
-                </div>
-              </div>
-            ))
-          )}
         </div>
+        
+        {/* Floating Action Button for New Chat/Group */}
+        <button 
+          onClick={() => setIsGroupModalOpen(true)}
+          className="absolute bottom-24 md:bottom-6 right-6 h-14 w-14 bg-white text-black rounded-full flex items-center justify-center shadow-lg shadow-white/10 hover:scale-105 transition-transform active:scale-95 z-40"
+        >
+          <Plus size={24} />
+        </button>
       </aside>
 
       {/* Main Area */}
@@ -903,21 +888,12 @@ export default function Dashboard() {
           <Users size={22} />
           <span className="text-[10px] font-medium">People</span>
         </button>
-        <button onClick={() => { setActiveTab("online"); setSelectedChat(null); }}
-          className={`flex flex-col items-center gap-1 transition-colors ${activeTab === "online" ? "text-white" : "text-zinc-500"}`}>
-          <Wifi size={22} />
-          <span className="text-[10px] font-medium">Online</span>
-        </button>
         <button onClick={() => { setActiveTab("settings"); setSelectedChat(null); }}
-          className={`flex flex-col items-center gap-1 transition-colors ${activeTab === "settings" ? "text-white" : "text-zinc-500"}`}>
-          <Settings size={22} />
-          <span className="text-[10px] font-medium">Settings</span>
-        </button>
-        <div className="relative flex flex-col items-center gap-1">
-          <img src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.email || 'U')}&background=ffffff&color=000`} alt="" className="h-7 w-7 rounded-full border border-white/10" />
+          className={`relative flex flex-col items-center gap-1 transition-transform active:scale-95 ${activeTab === "settings" ? "opacity-100" : "opacity-60"}`}>
+          <img src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.email || 'U')}&background=ffffff&color=000`} alt="" className={`h-7 w-7 rounded-full border-2 ${activeTab === "settings" ? "border-white" : "border-white/10"}`} />
           <span className={`absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-black ${socketConnected ? "bg-green-400" : "bg-orange-400 animate-pulse"}`} />
-          <span className="text-[10px] font-medium text-zinc-500">Me</span>
-        </div>
+          <span className={`text-[10px] font-medium ${activeTab === "settings" ? "text-white" : "text-zinc-500"}`}>Me</span>
+        </button>
       </nav>
       <AnimatePresence>
         {callState && (
@@ -952,38 +928,39 @@ export default function Dashboard() {
               </div>
 
               {/* Controls */}
-              <div className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 md:gap-4 bg-black/70 backdrop-blur-md px-5 py-3 md:py-4 rounded-2xl border border-white/10">
+              <div className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 z-30 flex items-center gap-4 md:gap-6 bg-black/70 backdrop-blur-md px-6 py-4 md:py-5 rounded-[2rem] border border-white/10">
                 {callState === "incoming" ? (
                   <>
-                    <button onClick={endCall} className="w-12 h-12 md:w-14 md:h-14 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center transition-colors shadow-lg shadow-red-500/30">
-                      <PhoneOff size={22} />
+                    <button onClick={endCall} className="w-14 h-14 md:w-16 md:h-16 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center transition-colors shadow-lg shadow-red-500/30">
+                      <PhoneOff size={24} />
                     </button>
-                    <button onClick={acceptCall} className="w-12 h-12 md:w-14 md:h-14 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center transition-colors shadow-lg shadow-green-500/30 animate-pulse">
-                      <Phone size={22} />
+                    <button onClick={acceptCall} className="w-14 h-14 md:w-16 md:h-16 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center transition-colors shadow-lg shadow-green-500/30 animate-pulse ml-4 md:ml-8">
+                      <Phone size={24} />
                     </button>
                   </>
                 ) : (
                   <>
-                    <button onClick={toggleMute} className={`w-11 h-11 rounded-full flex items-center justify-center transition-colors ${isMuted ? "bg-red-500/80" : "bg-white/15 hover:bg-white/25"}`}>
-                      {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
+                    <button onClick={toggleMute} className={`w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center transition-colors ${isMuted ? "bg-red-500/80" : "bg-white/15 hover:bg-white/25"}`}>
+                      {isMuted ? <MicOff size={22} /> : <Mic size={22} />}
                     </button>
                     {!isAudioOnly && (
-                      <button onClick={toggleVideo} className={`w-11 h-11 rounded-full flex items-center justify-center transition-colors ${isVideoOff ? "bg-red-500/80" : "bg-white/15 hover:bg-white/25"}`}>
-                        {isVideoOff ? <VideoOff size={20} /> : <Video size={20} />}
+                      <button onClick={toggleVideo} className={`w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center transition-colors ${isVideoOff ? "bg-red-500/80" : "bg-white/15 hover:bg-white/25"}`}>
+                        {isVideoOff ? <VideoOff size={22} /> : <Video size={22} />}
                       </button>
                     )}
                     {!isAudioOnly && (
-                      <button onClick={shareScreen} className="hidden md:flex w-11 h-11 bg-blue-500/80 hover:bg-blue-500 rounded-full items-center justify-center transition-colors">
-                        <MonitorUp size={20} />
+                      <button onClick={shareScreen} className="hidden md:flex w-12 h-12 md:w-14 md:h-14 bg-blue-500/80 hover:bg-blue-500 rounded-full items-center justify-center transition-colors">
+                        <MonitorUp size={22} />
                       </button>
                     )}
                     {!isAudioOnly && (
-                      <button onClick={flipCamera} className="flex md:hidden w-11 h-11 bg-white/15 hover:bg-white/25 rounded-full items-center justify-center transition-colors" title="Flip Camera">
-                        <RefreshCcw size={20} />
+                      <button onClick={flipCamera} className="flex md:hidden w-12 h-12 md:w-14 md:h-14 bg-white/15 hover:bg-white/25 rounded-full items-center justify-center transition-colors" title="Flip Camera">
+                        <RefreshCcw size={22} />
                       </button>
                     )}
-                    <button onClick={endCall} className="w-12 h-12 md:w-14 md:h-14 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center transition-colors shadow-lg shadow-red-500/30">
-                      <PhoneOff size={22} />
+                    <div className="w-[1px] h-8 bg-white/10 mx-1 md:mx-2" /> {/* Separator */}
+                    <button onClick={endCall} className="w-14 h-14 md:w-16 md:h-16 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center transition-colors shadow-lg shadow-red-500/30">
+                      <PhoneOff size={24} />
                     </button>
                   </>
                 )}
