@@ -80,6 +80,7 @@ export default function Dashboard() {
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [callTarget, setCallTarget] = useState(null); // who we're calling / who called us
   const [facingMode, setFacingMode] = useState("user");
+  const [showPermissionModal, setShowPermissionModal] = useState(false);
 
   // WebRTC refs
   const socketRef = useRef(null);            // stable ref for closures (WebRTC)
@@ -533,7 +534,7 @@ export default function Dashboard() {
       });
     } catch (err) {
       console.error("[Call] initiateCall failed:", err);
-      alert("Could not access camera/microphone. Please allow permissions and try again.");
+      setShowPermissionModal(true);
       setCallState(null);
     }
   };
@@ -593,6 +594,7 @@ export default function Dashboard() {
       });
     } catch (err) {
       console.error("[Call] acceptCall failed:", err);
+      setShowPermissionModal(true);
       cleanupCallRef.current?.();
     }
   };
@@ -997,6 +999,26 @@ export default function Dashboard() {
 
       <AnimatePresence>
         {isGroupModalOpen && <CreateGroupModal isOpen={isGroupModalOpen} onClose={() => setIsGroupModalOpen(false)} connections={connections.filter(c => !c.isGroup)} />}
+      </AnimatePresence>
+
+      {/* ── Permission Denied Modal ── */}
+      <AnimatePresence>
+        {showPermissionModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[500] bg-black/80 flex items-center justify-center p-4">
+            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className="bg-[#1a1a1e] border border-white/10 rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl">
+              <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500">
+                <VideoOff size={32} />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Camera & Mic Required</h3>
+              <p className="text-zinc-400 text-sm mb-6">
+                Please allow camera and microphone access in your browser settings to make calls. You may need to click the lock icon in the address bar.
+              </p>
+              <button onClick={() => setShowPermissionModal(false)} className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 rounded-xl transition-colors">
+                Got it
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
       </AnimatePresence>
 
       {/* ── In-app message toast ── */}
