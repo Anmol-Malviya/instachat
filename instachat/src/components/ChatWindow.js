@@ -10,7 +10,7 @@ import { cacheMessages, getCachedMessages, queuePendingMessage, getPendingMessag
 import {
   Send, Paperclip, MoreVertical, Phone, Video, ArrowLeft,
   Search, X, Pin, Download, Ban, Smile, Copy, Forward,
-  Trash2, ChevronDown, Image as ImageIcon, Clock, AlertTriangle, Info, Users, CloudOff
+  Trash2, ChevronDown, Image as ImageIcon, Clock, AlertTriangle, Info, Users, CloudOff, FileText
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { storage, ref, uploadBytes, getDownloadURL } from "@/lib/firebase";
@@ -578,6 +578,16 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
                     <div className="mb-2 rounded-xl overflow-hidden max-w-full">
                       {msg.mimeType?.startsWith('video/') ? (
                         <video src={msg.mediaUrl} controls className="max-h-60 w-full object-cover" />
+                      ) : msg.mimeType === 'application/pdf' ? (
+                        <a href={msg.mediaUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 bg-indigo-500/10 rounded-xl hover:bg-indigo-500/20 transition-colors border border-indigo-500/20">
+                          <div className="bg-indigo-500/20 p-2 rounded-lg text-indigo-400 flex-shrink-0">
+                            <FileText size={24} />
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-sm font-bold truncate">{msg.text || "Document"}</span>
+                            <span className="text-[10px] text-zinc-400 uppercase tracking-widest">PDF File</span>
+                          </div>
+                        </a>
                       ) : (
                         <img src={msg.mediaUrl} alt="" className="max-h-60 w-full object-cover" />
                       )}
@@ -690,7 +700,7 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
               className={`p-1.5 md:p-2 transition-colors ${showStickers ? "text-yellow-400" : "text-zinc-500 hover:text-white"}`}>
               <Smile size={20} />
             </button>
-            <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="image/*,video/*" className="hidden" />
+            <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="image/*,video/*,application/pdf" className="hidden" />
             <button type="button" onClick={() => fileInputRef.current?.click()}
               className="p-1.5 md:p-2 transition-colors text-zinc-500 hover:text-white">
               {isUploading ? <span className="animate-spin h-5 w-5 border-2 border-white/20 border-t-white rounded-full inline-block" /> : <Paperclip size={20} />}
