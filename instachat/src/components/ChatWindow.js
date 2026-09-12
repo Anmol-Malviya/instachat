@@ -41,7 +41,7 @@ function LinkCard({ url }) {
   if (!meta) return null;
   return (
     <a href={meta.href} target="_blank" rel="noopener noreferrer"
-      className="block mt-2 p-2 bg-black/30 rounded-xl border border-white/10 hover:border-white/50 transition-colors">
+      className="block mt-2 p-2 bg-[#050B14]/30 rounded-xl border border-indigo-500/20 hover:border-indigo-500/100 transition-colors">
       <p className="text-[10px] text-zinc-500 truncate">🔗 {meta.host}</p>
       <p className="text-xs text-zinc-300 truncate">{meta.href}</p>
     </a>
@@ -454,11 +454,11 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
   ];
 
   return (
-    <div className="flex h-full w-full bg-[#0c0c0e] relative">
+    <div className="flex h-full w-full bg-[#111827] relative">
       <div className="flex h-full flex-1 flex-col relative min-w-0" style={wallpaper ? { background: wallpaper } : {}}>
 
       {/* Header */}
-      <header className="flex items-center justify-between border-b border-white/5 bg-black/40 backdrop-blur-3xl px-4 py-3 flex-shrink-0 z-10">
+      <header className="flex items-center justify-between border-b border-indigo-500/10 bg-[#050B14]/40 backdrop-blur-3xl px-4 py-3 flex-shrink-0 z-10">
         <div className="flex items-center gap-3">
           {onBack && (
             <button onClick={onBack} className="md:hidden text-zinc-400 hover:text-white">
@@ -490,21 +490,21 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
             <AnimatePresence>
               {showMenu && (
                 <motion.div initial={{ opacity: 0, scale: 0.9, y: -8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }}
-                  className="absolute right-0 top-8 z-50 w-52 bg-[#1a1a1e] border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
+                  className="absolute right-0 top-8 z-50 w-52 bg-[#1E293B] border border-indigo-500/20 rounded-2xl shadow-2xl overflow-hidden">
                   <MenuItem icon={<Download size={14} />} label="Export Chat" onClick={exportChat} />
                   <MenuItem icon={<Clock size={14} />} label={disappearing ? "Turn Off Disappearing" : "Disappearing Messages"} onClick={toggleDisappearing} />
-                  <div className="border-t border-white/5" />
+                  <div className="border-t border-indigo-500/10" />
                   <p className="text-[10px] text-zinc-500 px-4 pt-3 pb-1 uppercase tracking-widest">Wallpaper</p>
                   <div className="flex gap-2 px-4 pb-3 flex-wrap">
                     {wallpapers.map(w => (
                       <button key={w.label} onClick={() => setWallpaperOption(w.value)} title={w.label}
-                        className={`h-6 w-6 rounded-full border-2 transition-all ${wallpaper === w.value ? "border-white scale-110" : "border-white/10"}`}
+                        className={`h-6 w-6 rounded-full border-2 transition-all ${wallpaper === w.value ? "border-white scale-110" : "border-indigo-500/20"}`}
                         style={w.value ? { background: w.value } : { background: "#1a1a1e" }}>
                         {!w.value && <span className="text-[8px] flex items-center justify-center h-full text-zinc-400">✕</span>}
                       </button>
                     ))}
                   </div>
-                  <div className="border-t border-white/5" />
+                  <div className="border-t border-indigo-500/10" />
                   <MenuItem icon={<Ban size={14} />} label={isBlocked ? "Unblock User" : "Block User"} onClick={toggleBlock} danger={!isBlocked} />
                   <MenuItem icon={<AlertTriangle size={14} />} label="Report User" onClick={() => { setReportTarget({ id: selectedChat.uid, type: 'user' }); setShowMenu(false); }} danger />
                 </motion.div>
@@ -518,7 +518,7 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
       <AnimatePresence>
         {showSearch && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-            className="bg-black/40 backdrop-blur-md border-b border-white/5 px-4 py-2 flex items-center gap-2 overflow-hidden flex-shrink-0">
+            className="bg-[#050B14]/40 backdrop-blur-md border-b border-indigo-500/10 px-4 py-2 flex items-center gap-2 overflow-hidden flex-shrink-0">
             <Search size={14} className="text-zinc-500" />
             <input autoFocus value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
               placeholder="Search messages..." className="flex-1 bg-transparent text-sm outline-none placeholder:text-zinc-600 text-white" />
@@ -546,7 +546,7 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
         {filteredMessages.map((msg, i) => {
           if (msg.isSystem) return (
             <div key={msg._id || i} className="flex justify-center my-1">
-              <div className="bg-white/5 border border-white/10 px-4 py-1 rounded-full text-[10px] text-zinc-400">{msg.text}</div>
+              <div className="bg-white/5 border border-indigo-500/20 px-4 py-1 rounded-full text-[10px] text-zinc-400">{msg.text}</div>
             </div>
           );
           const isMe = msg.senderId === user.uid;
@@ -570,7 +570,7 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
                   className={`rounded-[1.25rem] px-4 py-2.5 cursor-pointer shadow-sm ${
                     msg.isSticker ? "bg-transparent text-4xl px-2 shadow-none"
                     : isMe ? "bg-white text-black rounded-tr-sm"
-                    : "bg-[#18181b] text-white rounded-tl-sm border border-white/5"
+                    : "bg-[#18181b] text-white rounded-tl-sm border border-indigo-500/10"
                   }`}>
                   
                   {msg.mediaUrl && (
@@ -598,7 +598,7 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
                   <div className={`flex gap-1 mt-1 flex-wrap ${isMe ? "justify-end" : "justify-start"}`}>
                     {Object.entries(reactionCounts).map(([emoji, count]) => (
                       <button key={emoji} onClick={() => sendReaction(msg._id, emoji)}
-                        className="flex items-center gap-0.5 bg-white/10 hover:bg-white/20 rounded-full px-1.5 py-0.5 text-[11px] border border-white/10 transition-colors">
+                        className="flex items-center gap-0.5 bg-white/10 hover:bg-white/20 rounded-full px-1.5 py-0.5 text-[11px] border border-indigo-500/20 transition-colors">
                         {emoji}<span className="text-zinc-400 text-[10px]">{count}</span>
                       </button>
                     ))}
@@ -608,7 +608,7 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
                 <AnimatePresence>
                   {reactionPicker === msg._id && (
                     <motion.div initial={{ opacity: 0, scale: 0.8, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.8 }}
-                      className={`absolute ${isMe ? "right-0" : "left-0"} -top-12 z-20 flex gap-1 bg-[#1a1a1e] border border-white/10 rounded-2xl p-2 shadow-xl`}>
+                      className={`absolute ${isMe ? "right-0" : "left-0"} -top-12 z-20 flex gap-1 bg-[#1E293B] border border-indigo-500/20 rounded-2xl p-2 shadow-xl`}>
                       {EMOJI_REACTIONS.map(emoji => (
                         <button key={emoji} onClick={() => sendReaction(msg._id, emoji)} className="text-xl hover:scale-125 transition-transform p-0.5">{emoji}</button>
                       ))}
@@ -627,7 +627,7 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
         {contextMenu && (
           <motion.div ref={menuRef} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
             style={{ top: Math.min(contextMenu.y, (typeof window !== 'undefined' ? window.innerHeight : 800) - 200), left: Math.min(contextMenu.x, (typeof window !== 'undefined' ? window.innerWidth : 600) - 180) }}
-            className="fixed z-50 w-44 bg-[#1a1a1e] border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
+            className="fixed z-50 w-44 bg-[#1E293B] border border-indigo-500/20 rounded-2xl shadow-2xl overflow-hidden">
             <MenuItem icon={<Copy size={13} />} label="Copy" onClick={() => copyMessage(contextMenu.msg.text)} />
             <MenuItem icon={<Pin size={13} />} label="Pin Message" onClick={() => { pinMessage(contextMenu.msg); setContextMenu(null); }} />
             <MenuItem icon={<Smile size={13} />} label="React" onClick={() => { setReactionPicker(contextMenu.msgId); setContextMenu(null); }} />
@@ -662,8 +662,8 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
       <AnimatePresence>
         {showStickers && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-            className="flex-shrink-0 bg-[#141416] border-t border-white/5 overflow-hidden">
-            <div className="flex border-b border-white/5">
+            className="flex-shrink-0 bg-[#141416] border-t border-indigo-500/10 overflow-hidden">
+            <div className="flex border-b border-indigo-500/10">
               {STICKER_PACKS.map((_, idx) => (
                 <button key={idx} onClick={() => setStickerTab(idx)}
                   className={`flex-1 py-2 text-xs transition-colors ${stickerTab === idx ? "text-white border-b-2 border-white" : "text-zinc-500"}`}>
@@ -683,8 +683,8 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
 
       {/* Input */}
       {!isBlocked && (
-        <footer className="bg-black/40 backdrop-blur-3xl p-3 md:p-4 flex-shrink-0 border-t border-white/5 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] md:pb-4">
-          <form onSubmit={sendMessage} className="flex items-center gap-2 rounded-[1.5rem] bg-white/5 p-1.5 md:p-2 pr-3 focus-within:ring-1 focus-within:ring-white/50 border border-white/5 shadow-inner">
+        <footer className="bg-[#050B14]/40 backdrop-blur-3xl p-3 md:p-4 flex-shrink-0 border-t border-indigo-500/10 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] md:pb-4">
+          <form onSubmit={sendMessage} className="flex items-center gap-2 rounded-[1.5rem] bg-white/5 p-1.5 md:p-2 pr-3 focus-within:ring-1 focus-within:ring-white/50 border border-indigo-500/10 shadow-inner">
             <button type="button" onClick={() => setShowStickers(s => !s)}
               className={`p-1.5 md:p-2 transition-colors ${showStickers ? "text-yellow-400" : "text-zinc-500 hover:text-white"}`}>
               <Smile size={20} />
@@ -710,8 +710,8 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
       <AnimatePresence>
         {showDetails && (
           <motion.div initial={{ width: 0, opacity: 0 }} animate={{ width: 300, opacity: 1 }} exit={{ width: 0, opacity: 0 }}
-            className="flex-shrink-0 border-l border-white/5 bg-[#09090b] flex flex-col hidden md:flex">
-            <div className="p-6 flex flex-col items-center border-b border-white/5">
+            className="flex-shrink-0 border-l border-indigo-500/10 bg-[#0B0F19] flex flex-col hidden md:flex">
+            <div className="p-6 flex flex-col items-center border-b border-indigo-500/10">
               <img src={selectedChat.photoURL || `https://ui-avatars.com/api/?name=${selectedChat.name}&background=random`} alt="" className="w-24 h-24 rounded-full object-cover mb-4" />
               <h2 className="text-lg font-bold text-white text-center">{selectedChat.name}</h2>
               <p className="text-xs text-zinc-400">{selectedChat.isGroup ? "Group Chat" : "Direct Message"}</p>

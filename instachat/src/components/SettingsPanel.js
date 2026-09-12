@@ -75,7 +75,7 @@ export default function SettingsPanel() {
   };
 
   return (
-    <div className="flex-1 flex flex-col overflow-y-auto bg-[#0c0c0e]">
+    <div className="flex-1 flex flex-col overflow-y-auto bg-[#111827]">
       {/* ── Profile Header Banner ── */}
       <div className="relative bg-gradient-to-b from-white/10 to-transparent px-4 sm:px-8 pt-8 pb-16 flex-shrink-0">
         <h1 className="text-xl sm:text-2xl font-black tracking-tight mb-1">Settings</h1>
@@ -154,7 +154,7 @@ export default function SettingsPanel() {
                 <input type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })}
                   placeholder="Your full name" className="w-full bg-transparent py-3 text-sm text-white placeholder:text-zinc-600 outline-none" required />
               </FieldRow>
-              <div className="border-t border-white/5" />
+              <div className="border-t border-indigo-500/10" />
               <FieldRow label="Username" icon={<span className="text-zinc-500 text-sm font-bold">@</span>}>
                 <input type="text" value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })}
                   placeholder="username" className="w-full bg-transparent py-3 text-sm text-white placeholder:text-zinc-600 outline-none" required />
@@ -176,7 +176,7 @@ export default function SettingsPanel() {
                 <input type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })}
                   placeholder="+1 234 567 890" className="w-full bg-transparent py-3 text-sm text-white placeholder:text-zinc-600 outline-none" />
               </FieldRow>
-              <div className="border-t border-white/5" />
+              <div className="border-t border-indigo-500/10" />
               <FieldRow label="Date of Birth" icon={<Calendar size={15} className="text-zinc-500" />}>
                 <input type="date" value={formData.dob} onChange={e => setFormData({ ...formData, dob: e.target.value })}
                   className="w-full bg-transparent py-3 text-sm text-white outline-none [color-scheme:dark]" />
@@ -201,7 +201,7 @@ export default function SettingsPanel() {
         {/* Security Tab */}
         {activeTab === "security" && (
           <motion.form key="security-form" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} onSubmit={handlePasswordUpdate} className="space-y-4">
-            <div className="flex items-start gap-3 p-4 bg-blue-500/8 border border-blue-500/20 rounded-2xl">
+            <div className="flex items-start gap-3 p-4 bg-indigo-500/8 border border-blue-500/20 rounded-2xl">
               <ShieldCheck size={18} className="text-blue-400 flex-shrink-0 mt-0.5" />
               <p className="text-xs text-zinc-400 leading-relaxed">
                 For security, you&apos;ll need to confirm your current password before setting a new one.
@@ -215,12 +215,12 @@ export default function SettingsPanel() {
                 <input type="password" value={passwords.current} onChange={e => setPasswords({ ...passwords, current: e.target.value })}
                   placeholder="••••••••" className="w-full bg-transparent py-3 text-sm text-white placeholder:text-zinc-600 outline-none" required />
               </FieldRow>
-              <div className="border-t border-white/5" />
+              <div className="border-t border-indigo-500/10" />
               <FieldRow label="New Password" icon={<Lock size={15} className="text-white" />}>
                 <input type="password" value={passwords.new} onChange={e => setPasswords({ ...passwords, new: e.target.value })}
                   placeholder="Min. 6 characters" className="w-full bg-transparent py-3 text-sm text-white placeholder:text-zinc-600 outline-none" required minLength="6" />
               </FieldRow>
-              <div className="border-t border-white/5" />
+              <div className="border-t border-indigo-500/10" />
               <FieldRow label="Confirm Password" icon={<Lock size={15} className="text-white" />}>
                 <input type="password" value={passwords.confirm} onChange={e => setPasswords({ ...passwords, confirm: e.target.value })}
                   placeholder="Repeat new password" className="w-full bg-transparent py-3 text-sm text-white placeholder:text-zinc-600 outline-none" required minLength="6" />
@@ -309,7 +309,7 @@ export default function SettingsPanel() {
                       setError("Please grant permission first.");
                     }
                   }}
-                  className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-zinc-300 py-2.5 rounded-xl font-bold text-xs transition-all border border-white/5"
+                  className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-zinc-300 py-2.5 rounded-xl font-bold text-xs transition-all border border-indigo-500/10"
                 >
                   Send Test Notification
                 </button>

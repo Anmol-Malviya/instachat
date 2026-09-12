@@ -716,15 +716,15 @@ export default function Dashboard() {
 
   if (loading || !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#09090b]">
+      <div className="flex min-h-screen items-center justify-center bg-[#0B0F19]">
         <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-white" />
       </div>
     );
   }
 
   return (
-    <div className="flex h-[100dvh] bg-black text-white overflow-hidden selection:bg-white/30 md:p-4 lg:p-6 xl:p-8 relative">
-      <div className="flex flex-1 w-full max-w-[1600px] mx-auto bg-[#09090b] md:rounded-[2.5rem] md:border md:border-white/10 overflow-hidden md:shadow-2xl relative z-10">
+    <div className="flex h-[100dvh] bg-[#050B14] text-white overflow-hidden selection:bg-white/30 md:p-4 lg:p-6 xl:p-8 relative">
+      <div className="flex flex-1 w-full max-w-[1600px] mx-auto bg-[#0B0F19] md:rounded-[2.5rem] md:border md:border-indigo-500/20 overflow-hidden md:shadow-2xl relative z-10">
       {!profileData?.username && <CompleteProfileModal />}
 
       {/* Audio assets */}
@@ -733,7 +733,7 @@ export default function Dashboard() {
       <audio ref={notificationRef} src="https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3" />
 
       {/* Nav Sidebar — hidden on mobile, visible md+ */}
-      <nav className="hidden md:flex flex-shrink-0 w-14 md:w-20 flex-col items-center justify-between border-r border-white/5 bg-black py-6">
+      <nav className="hidden md:flex flex-shrink-0 w-14 md:w-20 flex-col items-center justify-between border-r border-indigo-500/10 bg-[#050B14] py-6">
         <div className="flex flex-col gap-6 items-center">
           <div className="h-8 w-8 md:h-10 md:w-10 flex items-center justify-center rounded-xl bg-white text-black">
             <MessageSquare size={18} />
@@ -747,14 +747,14 @@ export default function Dashboard() {
         <div className="flex flex-col gap-5 items-center">
           <button onClick={logout} className="text-zinc-500 hover:text-red-500 transition-colors"><LogOut size={20} /></button>
           <button onClick={() => setActiveTab("settings")} className="relative transition-transform active:scale-95">
-            <img src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.email || 'U')}&background=ffffff&color=000`} alt="" className={`h-8 w-8 md:h-10 md:w-10 rounded-full border-2 transition-colors ${activeTab === "settings" ? "border-white" : "border-white/10 hover:border-white/30"}`} />
+            <img src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.email || 'U')}&background=ffffff&color=000`} alt="" className={`h-8 w-8 md:h-10 md:w-10 rounded-full border-2 transition-colors ${activeTab === "settings" ? "border-white" : "border-indigo-500/20 hover:border-white/30"}`} />
             <span title={socketConnected ? "Connected" : "Connecting..."} className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-black ${socketConnected ? "bg-green-400" : "bg-orange-400 animate-pulse"}`} />
           </button>
         </div>
       </nav>
 
       {/* Chat List Sidebar */}
-      <aside className={`flex-shrink-0 flex-col border-r border-white/5 bg-[#09090b] w-full md:w-72 lg:w-80 ${(selectedChat || activeTab === "settings") ? "hidden md:flex" : "flex"}`}>
+      <aside className={`flex-shrink-0 flex-col border-r border-indigo-500/10 bg-[#0B0F19] w-full md:w-72 lg:w-80 ${(selectedChat || activeTab === "settings") ? "hidden md:flex" : "flex"}`}>
         <header className="flex flex-col p-4 gap-4 flex-shrink-0">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-bold capitalize">{activeTab === "online" ? "Online Now" : activeTab}</h1>
@@ -776,7 +776,7 @@ export default function Dashboard() {
             <div className="mb-4">
               <p className="text-[10px] uppercase tracking-wider text-zinc-500 font-bold mb-2 flex items-center gap-1 px-1"><Bell size={11} /> Requests</p>
               {incomingRequests.map(req => (
-                <div key={req._id || req.id} className="flex items-center justify-between bg-white/5 p-3 rounded-xl border border-white/5 mb-2">
+                <div key={req._id || req.id} className="flex items-center justify-between bg-white/5 p-3 rounded-xl border border-indigo-500/10 mb-2">
                   <div className="flex items-center gap-2">
                     <img src={req.senderPhoto} className="h-8 w-8 rounded-full" alt="" />
                     <p className="text-xs font-medium">{req.senderName?.split(' ')[0]}</p>
@@ -820,7 +820,7 @@ export default function Dashboard() {
             </div>
           )}
           {activeTab === "connections" && connections.map(con => (
-            <div key={con.uid} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 mb-2">
+            <div key={con.uid} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-indigo-500/10 mb-2">
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <img src={con.photoURL} className="h-10 w-10 rounded-full" alt="" />
@@ -848,7 +848,7 @@ export default function Dashboard() {
       </aside>
 
       {/* Main Area */}
-      <section className={`flex-1 flex flex-col bg-[#0c0c0e] min-w-0 overflow-hidden ${selectedChat || activeTab === "settings" ? "flex" : "hidden md:flex"}`}>
+      <section className={`flex-1 flex flex-col bg-[#111827] min-w-0 overflow-hidden ${selectedChat || activeTab === "settings" ? "flex" : "hidden md:flex"}`}>
         {activeTab === "settings" ? (
           <SettingsPanel />
         ) : selectedChat ? (
@@ -872,7 +872,7 @@ export default function Dashboard() {
       </section>
 
       {/* Mobile Bottom Navigation - Hidden when a chat is active */}
-      <nav className={`md:hidden fixed bottom-4 left-4 right-4 z-50 items-center justify-around bg-black/70 backdrop-blur-2xl border border-white/10 py-3 px-4 rounded-3xl shadow-2xl ${selectedChat ? "hidden" : "flex"}`}>
+      <nav className={`md:hidden fixed bottom-4 left-4 right-4 z-50 items-center justify-around bg-[#050B14]/70 backdrop-blur-2xl border border-indigo-500/20 py-3 px-4 rounded-3xl shadow-2xl ${selectedChat ? "hidden" : "flex"}`}>
         <button onClick={() => { setActiveTab("chats"); setSelectedChat(null); }}
           className={`flex flex-col items-center gap-1 transition-colors relative ${activeTab === "chats" && !selectedChat ? "text-white" : "text-zinc-500"}`}>
           <MessageSquare size={22} />
@@ -890,7 +890,7 @@ export default function Dashboard() {
         </button>
         <button onClick={() => { setActiveTab("settings"); setSelectedChat(null); }}
           className={`relative flex flex-col items-center gap-1 transition-transform active:scale-95 ${activeTab === "settings" ? "opacity-100" : "opacity-60"}`}>
-          <img src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.email || 'U')}&background=ffffff&color=000`} alt="" className={`h-7 w-7 rounded-full border-2 ${activeTab === "settings" ? "border-white" : "border-white/10"}`} />
+          <img src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.email || 'U')}&background=ffffff&color=000`} alt="" className={`h-7 w-7 rounded-full border-2 ${activeTab === "settings" ? "border-white" : "border-indigo-500/20"}`} />
           <span className={`absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-black ${socketConnected ? "bg-green-400" : "bg-orange-400 animate-pulse"}`} />
           <span className={`text-[10px] font-medium ${activeTab === "settings" ? "text-white" : "text-zinc-500"}`}>Me</span>
         </button>
@@ -898,9 +898,9 @@ export default function Dashboard() {
       <AnimatePresence>
         {callState && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[300] bg-black/95 backdrop-blur-xl flex items-center justify-center p-2 md:p-4">
+            className="fixed inset-0 z-[300] bg-[#050B14]/95 backdrop-blur-xl flex items-center justify-center p-2 md:p-4">
             <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }}
-              className="relative w-full max-w-4xl h-[90vh] md:h-[85vh] bg-[#0c0c0e] rounded-2xl md:rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl flex items-center justify-center">
+              className="relative w-full max-w-4xl h-[90vh] md:h-[85vh] bg-[#111827] rounded-2xl md:rounded-[2.5rem] border border-indigo-500/20 overflow-hidden shadow-2xl flex items-center justify-center">
 
               {/* Remote video */}
               <video ref={remoteVideoRef} autoPlay playsInline
@@ -909,7 +909,7 @@ export default function Dashboard() {
               {/* Center placeholder */}
               {(isAudioOnly || (callState !== "connected" && callState !== "connecting")) && (
                 <div className="flex flex-col items-center gap-4 z-10 text-center px-6">
-                  <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-white/10 ring-4 ring-white/30">
+                  <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-indigo-500/20 ring-4 ring-white/30">
                     <img src={callTarget?.photoURL || `https://ui-avatars.com/api/?name=${callTarget?.name}&background=random`} alt="" className="w-full h-full object-cover" />
                   </div>
                   <h2 className="text-xl md:text-2xl font-bold text-white">{callTarget?.name || callerName}</h2>
@@ -928,7 +928,7 @@ export default function Dashboard() {
               </div>
 
               {/* Controls */}
-              <div className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 z-30 flex items-center gap-4 md:gap-6 bg-black/70 backdrop-blur-md px-6 py-4 md:py-5 rounded-[2rem] border border-white/10">
+              <div className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 z-30 flex items-center gap-4 md:gap-6 bg-[#050B14]/70 backdrop-blur-md px-6 py-4 md:py-5 rounded-[2rem] border border-indigo-500/20">
                 {callState === "incoming" ? (
                   <>
                     <button onClick={endCall} className="w-14 h-14 md:w-16 md:h-16 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center transition-colors shadow-lg shadow-red-500/30">
@@ -949,7 +949,7 @@ export default function Dashboard() {
                       </button>
                     )}
                     {!isAudioOnly && (
-                      <button onClick={shareScreen} className="hidden md:flex w-12 h-12 md:w-14 md:h-14 bg-blue-500/80 hover:bg-blue-500 rounded-full items-center justify-center transition-colors">
+                      <button onClick={shareScreen} className="hidden md:flex w-12 h-12 md:w-14 md:h-14 bg-indigo-500/80 hover:bg-indigo-500 rounded-full items-center justify-center transition-colors">
                         <MonitorUp size={22} />
                       </button>
                     )}
@@ -981,8 +981,8 @@ export default function Dashboard() {
       {/* ── Permission Denied Modal ── */}
       <AnimatePresence>
         {showPermissionModal && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[500] bg-black/80 flex items-center justify-center p-4">
-            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className="bg-[#1a1a1e] border border-white/10 rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[500] bg-[#050B14]/80 flex items-center justify-center p-4">
+            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className="bg-[#1E293B] border border-indigo-500/20 rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl">
               <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500">
                 <VideoOff size={32} />
               </div>
@@ -990,7 +990,7 @@ export default function Dashboard() {
               <p className="text-zinc-400 text-sm mb-6">
                 Please allow camera and microphone access in your browser settings to make calls. You may need to click the lock icon in the address bar.
               </p>
-              <button onClick={() => setShowPermissionModal(false)} className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 rounded-xl transition-colors">
+              <button onClick={() => setShowPermissionModal(false)} className="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-medium py-3 rounded-xl transition-colors">
                 Got it
               </button>
             </motion.div>
@@ -1013,7 +1013,7 @@ export default function Dashboard() {
               setToast(null);
               clearTimeout(toastTimerRef.current);
             }}
-            className="fixed bottom-20 md:bottom-6 right-4 z-[400] flex items-center gap-3 bg-[#1a1a1e] border border-white/10 rounded-2xl px-4 py-3 shadow-2xl shadow-black/60 cursor-pointer hover:bg-white/5 transition-colors max-w-xs w-full"
+            className="fixed bottom-20 md:bottom-6 right-4 z-[400] flex items-center gap-3 bg-[#1E293B] border border-indigo-500/20 rounded-2xl px-4 py-3 shadow-2xl shadow-black/60 cursor-pointer hover:bg-white/5 transition-colors max-w-xs w-full"
           >
             <div className="relative flex-shrink-0">
               <img
