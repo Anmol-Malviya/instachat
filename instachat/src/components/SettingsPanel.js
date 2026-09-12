@@ -6,7 +6,7 @@ import { updateUser } from "@/lib/api";
 import { getAuth, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
 import { app } from "@/lib/firebase";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, Lock, Phone, Calendar, Save, CheckCircle2, AlertCircle, ShieldCheck, Monitor, Bell, LogOut } from "lucide-react";
+import { User, Lock, Phone, Calendar, Save, CheckCircle2, AlertCircle, ShieldCheck, Monitor, Bell, LogOut, Camera, Mic, Settings2 } from "lucide-react";
 
 export default function SettingsPanel() {
   const { user, profileData, refreshProfile, logout } = useAuth();
@@ -108,7 +108,7 @@ export default function SettingsPanel() {
           {[
             { id: "profile",    label: "Profile",  icon: <User size={15} /> },
             { id: "security",   label: "Security", icon: <ShieldCheck size={15} /> },
-            { id: "notifications", label: "Notifications", icon: <Bell size={15} /> },
+            { id: "permissions", label: "Permissions", icon: <Settings2 size={15} /> },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -253,9 +253,9 @@ export default function SettingsPanel() {
         )}
 
 
-        {/* Notifications Tab */}
-        {activeTab === "notifications" && (
-          <motion.div key="notifications" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+        {/* Permissions Tab */}
+        {activeTab === "permissions" && (
+          <motion.div key="permissions" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
             <div className="bg-white/[0.03] border border-white/8 rounded-2xl overflow-hidden p-4">
               <div className="flex items-center justify-between mb-4">
                 <div>
@@ -314,6 +314,35 @@ export default function SettingsPanel() {
                   Send Test Notification
                 </button>
               </div>
+            </div>
+
+            <div className="bg-white/[0.03] border border-white/8 rounded-2xl overflow-hidden p-4">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-sm font-bold text-white">Camera & Microphone</h3>
+                  <p className="text-xs text-zinc-500">Required for audio and video calls.</p>
+                </div>
+              </div>
+              <button
+                onClick={async () => {
+                  try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                    stream.getTracks().forEach(track => track.stop());
+                    setSuccess("Camera and Microphone access granted!");
+                  } catch (err) {
+                    if (err.name === 'NotAllowedError') {
+                      setError("Permission denied. Check your browser's lock icon to allow access.");
+                    } else {
+                      setError("Could not access camera/mic: " + err.message);
+                    }
+                  }
+                }}
+                className="w-full flex items-center justify-center gap-2 bg-white text-black hover:bg-zinc-200 py-2.5 rounded-xl font-bold text-xs transition-all"
+              >
+                <Camera size={14} />
+                <Mic size={14} />
+                Request Access
+              </button>
             </div>
 
             <div className="bg-white/[0.03] border border-white/8 rounded-2xl p-4">
