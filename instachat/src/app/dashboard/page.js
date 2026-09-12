@@ -5,11 +5,13 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, Phone, Users, Settings, Search, LogOut, Plus, Bell, Mic, MicOff, Video, VideoOff, PhoneOff, MonitorUp, Wifi, RefreshCcw } from "lucide-react";
-import SearchModal from "@/components/SearchModal";
+import dynamic from "next/dynamic";
 import ChatWindow from "@/components/ChatWindow";
-import CompleteProfileModal from "@/components/CompleteProfileModal";
-import CreateGroupModal from "@/components/CreateGroupModal";
-import SettingsPanel from "@/components/SettingsPanel";
+
+const SearchModal = dynamic(() => import("@/components/SearchModal"), { ssr: false });
+const CompleteProfileModal = dynamic(() => import("@/components/CompleteProfileModal"), { ssr: false });
+const CreateGroupModal = dynamic(() => import("@/components/CreateGroupModal"), { ssr: false });
+const SettingsPanel = dynamic(() => import("@/components/SettingsPanel"), { ssr: false });
 import { getRequests, acceptRequest as apiAcceptRequest, batchUsers, getUnreadCount, sendMessage as apiSendMsg, getUser, subscribeToPush, getUserGroups } from "@/lib/api";
 import { messaging, getToken, onMessage } from "@/lib/firebase";
 import { io } from "socket.io-client";
@@ -755,7 +757,7 @@ export default function Dashboard() {
 
       {/* Chat List Sidebar */}
       <aside className={`flex-shrink-0 flex-col border-r border-indigo-500/10 bg-[#0B0F19] w-full md:w-72 lg:w-80 ${(selectedChat || activeTab === "settings") ? "hidden md:flex" : "flex"}`}>
-        <header className="flex flex-col p-4 gap-4 flex-shrink-0">
+        <header className="flex flex-col p-4 gap-4 flex-shrink-0 sticky top-0 z-10 bg-[#111827]/80 backdrop-blur-xl border-b border-indigo-500/10 rounded-t-[2rem]">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-bold capitalize">{activeTab === "online" ? "Online Now" : activeTab}</h1>
             <div className="flex gap-2">

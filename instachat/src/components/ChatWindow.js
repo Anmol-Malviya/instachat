@@ -14,7 +14,8 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { storage, ref, uploadBytes, getDownloadURL } from "@/lib/firebase";
-import ReportModal from "./ReportModal";
+import dynamic from "next/dynamic";
+const ReportModal = dynamic(() => import("./ReportModal"), { ssr: false });
 
 const EMOJI_REACTIONS = ["👍", "❤️", "😂", "😮", "😢", "😡"];
 
