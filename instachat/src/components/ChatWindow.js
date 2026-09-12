@@ -68,6 +68,10 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
   const [isUploading,   setIsUploading]   = useState(false);
   const [reportTarget,  setReportTarget]  = useState(null); // { id, type }
   const [showDetails,   setShowDetails]   = useState(false);
+  const [hasMoreMessages, setHasMoreMessages] = useState(true);
+  const [isLoadingMore,   setIsLoadingMore]   = useState(false);
+  
+  const scrollContainerRef = useRef(null);
   const [isOffline,     setIsOffline]     = useState(false);
 
   const scrollRef = useRef(null);
@@ -130,6 +134,7 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
         
         const currentPending = await getPendingMessages(roomId);
         setMessages([...filtered, ...currentPending]);
+        setHasMoreMessages(msgs.length === 50); // Assuming limit is 50
 
         // Mark as read
         await markRoomRead(roomId, user.uid).catch(() => {});
@@ -451,6 +456,35 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
     { label: "Sunset",  value: "radial-gradient(ellipse at top, #7c2d12 0%, #0c0c0e 70%)" },
   ];
 
+  const handleScroll = useCallback(async (e) => {
+    if (e.target.scrollTop === 0 && hasMoreMessages && !isLoadingMore && messages.length > 0) {
+      setIsLoadingMore(true);
+      const oldestMessage = messages[0];
+      try {
+        const oldScrollHeight = e.target.scrollHeight;
+        
+        const msgs = await getMessages(roomId, oldestMessage.createdAt);
+        if (msgs.length > 0) {
+          setMessages(prev => [...msgs, ...prev]);
+          if (msgs.length < 50) setHasMoreMessages(false);
+          
+          // Restore scroll position
+          requestAnimationFrame(() => {
+            if (e.target) {
+              e.target.scrollTop = e.target.scrollHeight - oldScrollHeight;
+            }
+          });
+        } else {
+          setHasMoreMessages(false);
+        }
+      } catch (err) {
+        console.error("Failed to load more messages", err);
+      } finally {
+        setIsLoadingMore(false);
+      }
+    }
+  }, [roomId, hasMoreMessages, isLoadingMore, messages]);
+
   return (
     <div className="flex h-full w-full bg-[#111827] relative">
       <div className="flex h-full flex-1 flex-col relative min-w-0" style={wallpaper ? { background: wallpaper } : {}}>
@@ -540,7 +574,16 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
       </AnimatePresence>
 
       {/* Messages */}
-      <main className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+      <main 
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar"
+      >
+        {isLoadingMore && (
+          <div className="flex justify-center py-2">
+            <div className="h-5 w-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        )}
         {filteredMessages.map((msg, i) => {
           if (msg.isSystem) return (
             <div key={msg._id || i} className="flex justify-center my-1">

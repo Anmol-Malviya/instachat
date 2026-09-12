@@ -30,7 +30,10 @@ export const sendRequest   = (data) => api('/api/requests', { method: 'POST', bo
 export const acceptRequest = (id)   => api(`/api/requests/${id}/accept`, { method: 'PATCH' });
 
 // ── Messages ───────────────────────────────────────────
-export const getMessages      = (roomId)             => api(`/api/messages/${roomId}`);
+export const getMessages      = (roomId, before)     => {
+  const url = before ? `/api/messages/${roomId}?before=${before}` : `/api/messages/${roomId}`;
+  return api(url);
+};
 export const sendMessage      = (data)               => api('/api/messages', { method: 'POST', body: JSON.stringify(data) });
 export const updateMsgStatus  = (id, status)         => api(`/api/messages/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) });
 export const markRoomRead     = (roomId, readerUid)  => api(`/api/messages/read-room/${roomId}`, { method: 'PATCH', body: JSON.stringify({ readerUid }) });

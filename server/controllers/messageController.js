@@ -2,7 +2,20 @@ const { Message } = require('../models');
 
 exports.getMessages = async (req, res) => {
   try {
-    const msgs = await Message.find({ roomId: req.params.roomId }).sort({ createdAt: 1 }).limit(200);
+    const { roomId } = req.params;
+    const { before } = req.query;
+    
+    let query = { roomId };
+    if (before) {
+      query.createdAt = { $lt: new Date(before) };
+    }
+    
+    // Fetch the 50 most recent messages before the cursor
+    let msgs = await Message.find(query).sort({ createdAt: -1 }).limit(50);
+    
+    // Reverse them to be in chronological order
+    msgs = msgs.reverse();
+    
     res.json(msgs);
   } catch (err) {
     res.status(500).json({ error: err.message });
