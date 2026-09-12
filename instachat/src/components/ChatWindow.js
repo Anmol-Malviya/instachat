@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { getMessages, sendMessage as apiSendMsg, updateMsgStatus,
   markRoomRead, reactToMessage, deleteMessage as apiDeleteMsg,
-  getRoom, updateRoom,
+  getRoom, updateRoom, uploadFile
 } from "@/lib/api";
 import { cacheMessages, getCachedMessages, queuePendingMessage, getPendingMessages, removePendingMessage } from "@/lib/offlineStore";
 import {
@@ -13,7 +13,6 @@ import {
   Trash2, ChevronDown, Image as ImageIcon, Clock, AlertTriangle, Info, Users, CloudOff, FileText
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { storage, ref, uploadBytes, getDownloadURL } from "@/lib/firebase";
 import dynamic from "next/dynamic";
 const ReportModal = dynamic(() => import("./ReportModal"), { ssr: false });
 
@@ -316,16 +315,14 @@ export default function ChatWindow({ selectedChat, socket, onStartCall, onBack }
     if (!file) return;
     setIsUploading(true);
     try {
-      const storageRef = ref(storage, `chat_media/${roomId}/${Date.now()}_${file.name}`);
-      await uploadBytes(storageRef, file);
-      const url = await getDownloadURL(storageRef);
+      const uploadRes = await uploadFile(file);
       
       const msg = await apiSendMsg({
         roomId,
         senderId: user.uid,
         text: "",
-        mediaUrl: url,
-        mimeType: file.type,
+        mediaUrl: uploadRes.url,
+        mimeType: uploadRes.mimetype,
         status: "sent",
       });
       socket?.emit("new-message", {

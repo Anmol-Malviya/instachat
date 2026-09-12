@@ -16,6 +16,7 @@ const messageRoutes = require('./routes/messageRoutes');
 const roomRoutes = require('./routes/roomRoutes');
 const pushRoutes = require('./routes/pushRoutes');
 const reportRoutes = require('./routes/reportRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
 
 const ALLOWED_ORIGINS = [
   'https://instachat-nu.vercel.app',
@@ -47,6 +48,10 @@ connectDB();
 // Health check
 app.get('/', (req, res) => res.send('InstaChat Server ✅ (MongoDB MVC)'));
 
+// Serve static uploads folder
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Mount routes
 app.use('/api/users', userRoutes);
 app.use('/api/requests', requestRoutes);
@@ -54,6 +59,7 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/push', pushRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Socket & Server initialization
 const server = http.createServer(app);

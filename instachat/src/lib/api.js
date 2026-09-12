@@ -46,6 +46,16 @@ export const getUserGroups = (userId)    => api(`/api/rooms/groups/${userId}`);
 export const subscribeToPush = (uid, subscription) => api('/api/push/subscribe', { method: 'POST', body: JSON.stringify({ uid, subscription }) });
 // ── Reports ───────────────────────────────────────────
 export const createReport = (data)       => api('/api/reports', { method: 'POST', body: JSON.stringify(data) });
+export const uploadFile = async (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  const res = await fetch(`${BASE}/api/upload`, {
+    method: 'POST',
+    body: formData,
+  });
+  if (!res.ok) throw new Error('Upload failed');
+  return res.json();
+};
 export const searchMessages = (q, roomId) => {
   const url = roomId ? `/api/messages/search?q=${encodeURIComponent(q)}&roomId=${roomId}` : `/api/messages/search?q=${encodeURIComponent(q)}`;
   return api(url);
