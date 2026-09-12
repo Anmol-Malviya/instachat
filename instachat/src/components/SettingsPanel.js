@@ -293,7 +293,7 @@ export default function SettingsPanel() {
                       });
                     }
                   }}
-                  className="w-full flex items-center justify-center gap-2 bg-white text-black hover:bg-zinc-200 text-white py-2.5 rounded-xl font-bold text-xs transition-all"
+                  className="w-full flex items-center justify-center gap-2 bg-white text-black hover:bg-zinc-200 py-2.5 rounded-xl font-bold text-xs transition-all"
                 >
                   Request Permission
                 </button>
