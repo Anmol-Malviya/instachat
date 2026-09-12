@@ -18,8 +18,11 @@ exports.sendPushNotification = async (payload, senderId, receiverId) => {
     const sender = await User.findOne({ uid: senderId });
     
     if (receiver) {
-      const title = sender ? sender.name : 'New Message';
-      const body = payload.isSticker ? 'Sent a sticker' : (payload.text || 'New message arrived');
+      const title = sender ? sender.name : (payload.isCall ? 'Incoming Call' : 'New Message');
+      let body = payload.isSticker ? 'Sent a sticker' : (payload.text || 'New message arrived');
+      if (payload.isCall) {
+        body = `Incoming ${payload.callType === 'video' ? 'Video' : 'Voice'} Call`;
+      }
 
       // 1. Send via FCM
       if (receiver.fcmTokens?.length > 0) {

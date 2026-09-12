@@ -59,6 +59,9 @@ exports.initializeSocket = (server, ALLOWED_ORIGINS) => {
         name: data.name,
         callType: data.callType,
       });
+      
+      // Send Push Notification for incoming call
+      sendPushNotification({ isCall: true, callType: data.callType }, data.from, data.userToCall);
     });
 
     socket.on('answer-call', (data) => {
